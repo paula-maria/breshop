@@ -128,26 +128,27 @@ A plataforma permite que proprietários:
 
 ### Frontend
 
-* React
-* TypeScript
-* HTML5
-* CSS3
+* **React 19**
+* **TypeScript**
+* **Vite** (Build Tool & Dev Server)
+* **React Router DOM v7** (Roteamento e navegação)
+* **HTML5 & Vanilla CSS3** (Design System responsivo, glassmorphism e paleta HSL/Tailored)
 
 ### Backend
 
-* Python
-* FastAPI
+* **Node.js**
+* **Express** (ou NestJS) / **TypeScript**
 
 ### Banco de Dados
 
-* PostgreSQL
+* **PostgreSQL**
 
 ### Comunicação com a API
 
-* REST API
-* JSON
+* **REST API**
+* **JSON**
 
-### Controle de Versão
+### Ferramentas & Controle de Versão
 
 * Git
 * GitHub
@@ -158,6 +159,7 @@ A plataforma permite que proprietários:
 * Docker Compose
 
 A stack pode ser ajustada durante o desenvolvimento de acordo com as necessidades identificadas no projeto.
+
 
 ---
 
@@ -199,12 +201,67 @@ Funcionalidades de filtros avançados, negociação de preços e visualização 
 
 ---
 
+## Como Executar o Projeto
+
+Siga o passo a passo abaixo para rodar o projeto localmente em sua máquina.
+
+### Pré-requisitos
+
+Certifique-se de ter instalado em sua máquina:
+- [Node.js](https://nodejs.org/) (versão 18 ou superior)
+- [npm](https://www.npmjs.com/) ou `yarn` / `pnpm`
+- [Git](https://git-scm.com/)
+
+---
+
+### Passo a Passo
+
+#### 1. Clonar o repositório
+```bash
+git clone https://github.com/paula-maria/breshop.git
+cd breshop
+```
+
+#### 2. Entrar no diretório do frontend
+```bash
+cd frontend
+```
+
+#### 3. Instalar as dependências
+```bash
+npm install
+```
+
+#### 4. Iniciar o servidor de desenvolvimento
+```bash
+npm run dev
+```
+
+#### 5. Acessar no navegador
+Após rodar o comando acima, abra o seu navegador e acesse a URL exibida no terminal (por padrão: `http://localhost:5173`).
+
+---
+
+### Scripts Disponíveis
+
+Dentro do diretório `frontend`, você pode executar os seguintes comandos:
+
+| Comando | Descrição |
+| :--- | :--- |
+| `npm run dev` | Inicia o servidor local de desenvolvimento Vite com *Live Reload*. |
+| `npm run build` | Compila o projeto com TypeScript (`tsc`) e gera o bundle de produção na pasta `dist/`. |
+| `npm run lint` | Executa a verificação de regras de código utilizando o ESLint. |
+| `npm run preview` | Servidor local para visualizar a versão compilada de produção (`dist/`). |
+
+---
+
 ## Status do Projeto
 
 Em desenvolvimento.
 
 A documentação do projeto está organizada em:
 
-* `README.md` — contexto, problema, objetivo e visão geral do projeto;
+* `README.md` — contexto, problema, objetivo, tutorial de execução e visão geral do projeto;
 * `docs/requisitos.md` — especificação dos requisitos funcionais e não funcionais;
 * `docs/user-stories.md` — temas, épicos e User Stories.
+
