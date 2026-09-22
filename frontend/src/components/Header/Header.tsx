@@ -34,10 +34,10 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             Novidades
           </Link>
           <Link
-            to="/brechos?cat=feminino"
-            className={`site-header__link ${isActive('/brechos?cat=feminino') ? 'is-active' : ''}`}
+            to="/brechos?cat=brechos"
+            className={`site-header__link ${isActive('/brechos?cat=brechos') ? 'is-active' : ''}`}
           >
-            Feminino
+            Brechós
           </Link>
           <Link
             to="/brechos?cat=masculino"
@@ -65,7 +65,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                 Entrar
               </Link>
               <Link to="/cadastro" className="btn btn-dark-pill">
-                Criar loja
+                Criar Conta
               </Link>
             </>
           )}
@@ -150,7 +150,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
               className="btn btn-dark-pill w-full"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Criar loja
+              Criar Conta
             </Link>
           </div>
         </nav>

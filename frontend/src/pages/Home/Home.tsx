@@ -83,7 +83,7 @@ export default function Home() {
         {/* HERO SECTION */}
         <section className="hero-section">
           <div className="hero-section__content">
-            <span className="hero-section__eyebrow">MODA CIRCULAR BRASILEIRA</span>
+            <span className="hero-section__eyebrow">MODA CIRCULAR</span>
 
             <h1 className="hero-section__title">
               Moda com história, <br />
@@ -91,7 +91,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-section__subtitle">
-              Descubra peças únicas selecionadas por brechós de todo o Brasil.
+              Descubra peças únicas selecionadas por brechós de Macapá.
             </p>
 
             <div className="hero-section__search">
