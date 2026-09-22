@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 type HeaderProps = {
@@ -8,12 +8,25 @@ type HeaderProps = {
 
 export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [brechoDropdownOpen, setBrechoDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
     return location.pathname.startsWith(path)
   }
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setBrechoDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev)
 
@@ -28,23 +41,116 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
         {/* CENTER NAVIGATION */}
         <nav className="site-header__nav" aria-label="Navegação principal">
           <Link
-            to="/#novidades"
-            className={`site-header__link ${isActive('/#novidades') ? 'is-active' : ''}`}
+            to="/"
+            className={`site-header__link ${isActive('/') && !location.search ? 'is-active' : ''}`}
           >
-            Novidades
+            Início
           </Link>
+
+          {/* BRECHÓS DROPDOWN */}
+          <div
+            className="header-dropdown-wrapper"
+            ref={dropdownRef}
+            onMouseEnter={() => setBrechoDropdownOpen(true)}
+            onMouseLeave={() => setBrechoDropdownOpen(false)}
+          >
+            <button
+              type="button"
+              className={`site-header__link dropdown-trigger-btn ${
+                isActive('/brechos') ? 'is-active' : ''
+              }`}
+              onClick={() => setBrechoDropdownOpen((prev) => !prev)}
+              aria-expanded={brechoDropdownOpen}
+            >
+              Brechós
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: brechoDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {/* DROPDOWN MENU */}
+            {brechoDropdownOpen && (
+              <div className="header-dropdown-menu">
+                <Link
+                  to="/brechos"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <span className="dropdown-item__icon">🏪</span>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Todos os Brechós</span>
+                    <span className="dropdown-item__desc">Explorar lista completa</span>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/brechos?cidade=Macapá"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <span className="dropdown-item__icon">📍</span>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Brechós em Macapá</span>
+                    <span className="dropdown-item__desc">Ver lojas na capital</span>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/brechos?cidade=Santana"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <span className="dropdown-item__icon">📍</span>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Brechós em Santana</span>
+                    <span className="dropdown-item__desc">Ver lojas na região</span>
+                  </div>
+                </Link>
+
+                <div className="dropdown-divider" />
+
+                <Link
+                  to="/cadastro"
+                  className="dropdown-item is-highlight"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <span className="dropdown-item__icon">✨</span>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Cadastrar meu Brechó</span>
+                    <span className="dropdown-item__desc">Divulgue seu catálogo</span>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </div>
+
           <Link
-            to="/brechos?cat=brechos"
-            className={`site-header__link ${isActive('/brechos?cat=brechos') ? 'is-active' : ''}`}
+            to="/brechos?cat=feminino"
+            className={`site-header__link ${location.search.includes('feminino') ? 'is-active' : ''}`}
           >
-            Brechós
+            Feminino
           </Link>
+
           <Link
             to="/brechos?cat=masculino"
-            className={`site-header__link ${isActive('/brechos?cat=masculino') ? 'is-active' : ''}`}
+            className={`site-header__link ${location.search.includes('masculino') ? 'is-active' : ''}`}
           >
             Masculino
           </Link>
+
           <Link
             to="/cadastro"
             className={`site-header__link ${isActive('/cadastro') ? 'is-active' : ''}`}
@@ -65,7 +171,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                 Entrar
               </Link>
               <Link to="/cadastro" className="btn btn-dark-pill">
-                Criar Conta
+                Criar loja
               </Link>
             </>
           )}
@@ -113,28 +219,39 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Novidades
+            Início
           </Link>
+
           <Link
-            to="/brechos?cat=feminino"
+            to="/brechos"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Feminino
+            Todos os Brechós
           </Link>
+
           <Link
-            to="/brechos?cat=masculino"
+            to="/brechos?cidade=Macapá"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Masculino
+            Brechós em Macapá
           </Link>
+
+          <Link
+            to="/brechos?cidade=Santana"
+            className="site-header__mobile-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Brechós em Santana
+          </Link>
+
           <Link
             to="/cadastro"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Vender
+            Vender / Cadastrar Brechó
           </Link>
 
           <div className="site-header__mobile-actions">
@@ -150,7 +267,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
               className="btn btn-dark-pill w-full"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Criar Conta
+              Criar loja
             </Link>
           </div>
         </nav>

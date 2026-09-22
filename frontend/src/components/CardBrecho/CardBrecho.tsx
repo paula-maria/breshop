@@ -7,6 +7,7 @@ export type CardBrechoProps = {
   descricao?: string
   imageUrl?: string
   itensCount?: number
+  tone?: 'teal' | 'navy' | 'cyan'
 }
 
 export default function CardBrecho({
@@ -15,15 +16,17 @@ export default function CardBrecho({
   localizacao,
   descricao,
   imageUrl,
+  tone = 'teal',
 }: CardBrechoProps) {
   return (
     <article className="card card-brecho">
-      <div className="card-brecho__media">
+      <div className={`card-brecho__media card-brecho__media--${tone}`}>
         {imageUrl ? (
           <img src={imageUrl} alt={nome} className="card-brecho__img" />
         ) : (
-          <div className="card-brecho__placeholder">
-            <span>FOTO</span>
+          <div className="card-brecho__banner-illustration">
+            <div className="banner-icon-badge">🏪</div>
+            <span className="banner-store-tag">{nome.toUpperCase()}</span>
           </div>
         )}
       </div>
@@ -37,7 +40,7 @@ export default function CardBrecho({
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"

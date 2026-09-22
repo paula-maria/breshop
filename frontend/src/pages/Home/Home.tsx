@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Header from '../../components/Header/Header'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import FilterSidebar from '../../components/FilterSidebar/FilterSidebar'
@@ -39,24 +39,27 @@ const featuredPecas: CardPecaProps[] = [
   },
 ]
 
-const exploreBrechos: CardBrechoProps[] = [
+const exploreBrechos: (CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[] = [
   {
     id: '1',
     nome: 'Brechó Aurora',
     localizacao: 'Macapá - AP',
     descricao: 'Peças garimpadas com afeto e curadoria especial.',
+    tone: 'teal',
   },
   {
     id: '2',
     nome: 'Brechó Vintage',
     localizacao: 'Macapá - AP',
     descricao: 'O melhor do estilo retrô dos anos 80, 90 e 2000.',
+    tone: 'navy',
   },
   {
     id: '3',
     nome: 'Brechó X',
     localizacao: 'Santana - AP',
     descricao: 'Roupas e acessórios únicos para renovar seu estilo.',
+    tone: 'cyan',
   },
 ]
 
@@ -83,7 +86,7 @@ export default function Home() {
         {/* HERO SECTION */}
         <section className="hero-section">
           <div className="hero-section__content">
-            <span className="hero-section__eyebrow">MODA CIRCULAR</span>
+            <span className="hero-section__eyebrow">MODA CIRCULAR BRASILEIRA</span>
 
             <h1 className="hero-section__title">
               Moda com história, <br />
@@ -91,7 +94,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-section__subtitle">
-              Descubra peças únicas selecionadas por brechós de Macapá.
+              Descubra peças únicas selecionadas por brechós de todo o Brasil.
             </p>
 
             <div className="hero-section__search">
@@ -138,10 +141,13 @@ export default function Home() {
           </section>
         </div>
 
-        {/* EXPLORE BRECHÓS */}
+        {/* EXPLORE BRECHÓS SECTION WITH VER MAIS LINK */}
         <section className="home-section explore-brechos-section">
-          <div className="home-section__header">
+          <div className="home-section__header-row">
             <h2 className="home-section__title">EXPLORE BRECHÓS</h2>
+            <Link to="/brechos" className="see-more-link">
+              Ver todos os brechós <span className="arrow">→</span>
+            </Link>
           </div>
 
           <div className="grid-3-cols">
