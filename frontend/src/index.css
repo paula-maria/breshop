@@ -113,13 +113,13 @@ body {
   border-radius: var(--radius-pill);
   padding: 0.75rem 1.75rem;
   font-weight: 800;
-  box-shadow: 0 4px 14px rgba(0, 168, 232, 0.35);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-cyan-pill:hover {
   background: var(--cyan-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 168, 232, 0.45);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
 }
 
 .btn-ghost {
@@ -2033,12 +2033,13 @@ body {
 }
 
 .owner-cta-card {
-  background: var(--navy-dark);
-  color: #ffffff;
+  background: #f0f9ff;
+  color: var(--navy-dark);
+  border: 1px solid #bae6fd;
   border-radius: 24px;
   padding: 3.5rem 2rem;
   text-align: center;
-  box-shadow: 0 20px 40px -10px rgba(10, 37, 64, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(0, 168, 232, 0.1);
 }
 
 .owner-cta-title {
@@ -2050,7 +2051,7 @@ body {
 
 .owner-cta-subtitle {
   font-size: clamp(1rem, 1.8vw, 1.15rem);
-  color: #94a3b8;
+  color: #334155;
   max-width: 520px;
   margin: 0 auto 2rem;
 }
