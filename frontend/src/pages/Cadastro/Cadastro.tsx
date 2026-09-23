@@ -1,12 +1,17 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { ShoppingBag, Store, CheckCircle2 } from 'lucide-react'
+import { api } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Cadastro() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [accountType, setAccountType] = useState<'comprador' | 'brecho'>('brecho')
   const [step, setStep] = useState<1 | 2>(1)
   const [successMsg, setSuccessMsg] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   // Form states
   const [formData, setFormData] = useState({
@@ -26,35 +31,63 @@ export default function Cadastro() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleNextStep = (e: FormEvent) => {
+  const handleNextStep = async (e: FormEvent) => {
     e.preventDefault()
     if (accountType === 'comprador') {
-      handleSubmitFinal()
+      await handleSubmitFinal()
     } else {
       setStep(2)
     }
   }
 
-  const handleSubmitFinal = (e?: FormEvent) => {
+  const handleSubmitFinal = async (e?: FormEvent) => {
     if (e) e.preventDefault()
-    setSuccessMsg(true)
+    setError('')
+    setLoading(true)
 
-    // Save mock store info to localStorage
-    if (accountType === 'brecho') {
-      const storeData = {
-        nome: formData.nomeBrecho || 'Brechó da Maria',
-        localizacao: formData.localizacao,
-        whatsapp: formData.whatsapp,
-        instagram: formData.instagram,
-        horario: formData.horario,
-        descricao: formData.descricao,
+    try {
+      // 1. Cadastra no Banco de Dados Real via API
+      await api.post('/auth/register', {
+        name: formData.nomeResponsavel,
+        email: formData.email,
+        password: formData.senha,
+        role: accountType === 'brecho' ? 'PROPRIETARIO' : 'CLIENTE'
+      })
+
+      // 2. Faz o Login automático para setar o Cookie HttpOnly e o Contexto
+      const loginRes = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.senha
+      })
+
+      login(loginRes.data.user)
+      setSuccessMsg(true)
+
+      // Save mock store info to localStorage (Para ser usado no Frontend Mock)
+      if (accountType === 'brecho') {
+        const storeData = {
+          nome: formData.nomeBrecho || 'Brechó da Maria',
+          localizacao: formData.localizacao,
+          whatsapp: formData.whatsapp,
+          instagram: formData.instagram,
+          horario: formData.horario,
+          descricao: formData.descricao,
+        }
+        localStorage.setItem('breshop_user_store', JSON.stringify(storeData))
       }
-      localStorage.setItem('breshop_user_store', JSON.stringify(storeData))
-    }
 
-    setTimeout(() => {
-      navigate('/painel')
-    }, 1500)
+      setTimeout(() => {
+        if (accountType === 'brecho') {
+          navigate('/painel')
+        } else {
+          navigate('/')
+        }
+      }, 1500)
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Erro ao criar conta. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -89,6 +122,12 @@ export default function Cadastro() {
           </div>
         ) : (
           <>
+            {error && (
+              <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.875rem' }}>
+                {error}
+              </div>
+            )}
+            
             {step === 1 ? (
               <form onSubmit={handleNextStep} className="auth-form">
                 {/* ACCOUNT TYPE SELECTOR */}
@@ -174,8 +213,10 @@ export default function Cadastro() {
                   />
                 </div>
 
-                <button type="submit" className="btn btn-cyan-pill w-full auth-btn">
-                  {accountType === 'brecho' ? 'Continuar para dados da loja →' : 'Criar Conta'}
+                <button type="submit" className="btn btn-cyan-pill w-full auth-btn" disabled={loading}>
+                  {loading 
+                    ? 'Aguarde...' 
+                    : accountType === 'brecho' ? 'Continuar para dados da loja →' : 'Criar Conta'}
                 </button>
               </form>
             ) : (
@@ -286,8 +327,8 @@ export default function Cadastro() {
                   >
                     ← Voltar
                   </button>
-                  <button type="submit" className="btn btn-cyan-pill flex-1">
-                    Concluir e Abrir Minha Loja
+                  <button type="submit" className="btn btn-cyan-pill flex-1" disabled={loading}>
+                    {loading ? 'Criando conta...' : 'Concluir e Criar Conta'}
                   </button>
                 </div>
               </form>

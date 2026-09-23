@@ -1,14 +1,35 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleLoginSubmit = (e: FormEvent) => {
+  const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    navigate('/painel')
+    setError('')
+    setLoading(true)
+    
+    try {
+      const response = await api.post('/auth/login', { email, password: senha })
+      login(response.data.user)
+      
+      if (response.data.user.role === 'PROPRIETARIO') {
+        navigate('/painel')
+      } else {
+        navigate('/')
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Credenciais inválidas. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -21,6 +42,12 @@ export default function Login() {
             Acompanhe seu catálogo, mensagens e peças cadastradas
           </p>
         </div>
+
+        {error && (
+          <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.875rem' }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLoginSubmit} className="auth-form">
           <div className="form-group">
@@ -58,8 +85,8 @@ export default function Login() {
             />
           </div>
 
-          <button type="submit" className="btn btn-cyan-pill w-full auth-btn">
-            Entrar na Conta
+          <button type="submit" className="btn btn-cyan-pill w-full auth-btn" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar na Conta'}
           </button>
         </form>
 

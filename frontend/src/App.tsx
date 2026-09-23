@@ -11,6 +11,8 @@ import NotFound from './pages/NotFound/NotFound'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
 import FilterSidebar from './components/FilterSidebar/FilterSidebar'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 
 function PageLayout({
   children,
@@ -37,8 +39,9 @@ function PageLayout({
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
         <Route
           path="/"
           element={
@@ -90,17 +93,21 @@ export default function App() {
         <Route
           path="/painel"
           element={
-            <PageLayout showSidebar={false}>
-              <Painel />
-            </PageLayout>
+            <ProtectedRoute requiredRole="PROPRIETARIO">
+              <PageLayout showSidebar={false}>
+                <Painel />
+              </PageLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/favoritos"
           element={
-            <PageLayout showSidebar={false}>
-              <Favoritos />
-            </PageLayout>
+            <ProtectedRoute>
+              <PageLayout showSidebar={false}>
+                <Favoritos />
+              </PageLayout>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -111,7 +118,8 @@ export default function App() {
             </PageLayout>
           }
         />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }

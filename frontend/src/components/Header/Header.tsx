@@ -72,9 +72,8 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
           >
             <button
               type="button"
-              className={`site-header__link dropdown-trigger-btn ${
-                isActive('/brechos') ? 'is-active' : ''
-              }`}
+              className={`site-header__link dropdown-trigger-btn ${isActive('/brechos') ? 'is-active' : ''
+                }`}
               onClick={() => setBrechoDropdownOpen((prev) => !prev)}
               aria-expanded={brechoDropdownOpen}
             >
@@ -196,7 +195,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                 Entrar
               </Link>
               <Link to="/cadastro" className="btn btn-dark-pill">
-                Criar loja
+                Criar conta
               </Link>
             </>
           )}
@@ -294,7 +293,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
               className="btn btn-dark-pill w-full"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Criar loja
+              Criar conta
             </Link>
           </div>
         </nav>
