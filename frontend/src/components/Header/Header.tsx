@@ -139,16 +139,23 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
 
           <Link
             to="/brechos?cat=feminino"
-            className={`site-header__link ${location.search.includes('feminino') ? 'is-active' : ''}`}
+            className={`site-header__link ${location.search.includes('cat=feminino') ? 'is-active' : ''}`}
           >
             Feminino
           </Link>
 
           <Link
             to="/brechos?cat=masculino"
-            className={`site-header__link ${location.search.includes('masculino') ? 'is-active' : ''}`}
+            className={`site-header__link ${location.search.includes('cat=masculino') ? 'is-active' : ''}`}
           >
             Masculino
+          </Link>
+
+          <Link
+            to="/brechos?cat=todas"
+            className={`site-header__link ${location.search.includes('cat=todas') ? 'is-active' : ''}`}
+          >
+            Todas as Peças
           </Link>
 
           <Link
@@ -201,7 +208,31 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
           </Link>
 
           <Link
-            to="/brechos"
+            to="/brechos?cat=feminino"
+            className="site-header__mobile-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Feminino (Peças)
+          </Link>
+
+          <Link
+            to="/brechos?cat=masculino"
+            className="site-header__mobile-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Masculino (Peças)
+          </Link>
+
+          <Link
+            to="/brechos?cat=todas"
+            className="site-header__mobile-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Todas as Peças
+          </Link>
+
+          <Link
+            to="/brechos?view=lojas"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >

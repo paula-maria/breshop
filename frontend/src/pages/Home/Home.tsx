@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../../components/Header/Header'
 import SearchBar from '../../components/SearchBar/SearchBar'
@@ -6,7 +7,7 @@ import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import Footer from '../../components/Footer/Footer'
 
-const featuredPecas: CardPecaProps[] = [
+const featuredPecas: (CardPecaProps & { genero: 'feminino' | 'masculino' })[] = [
   {
     id: '1',
     nome: 'Jaqueta Jeans Bordada Vintage',
@@ -15,6 +16,7 @@ const featuredPecas: CardPecaProps[] = [
     tamanho: 'Tam. M',
     categoria: 'Jaqueta',
     statusTag: 'DISPONÍVEL',
+    genero: 'feminino',
     imageUrl: '/images/denim_jacket.png',
   },
   {
@@ -25,6 +27,7 @@ const featuredPecas: CardPecaProps[] = [
     tamanho: 'Tam. M',
     categoria: 'Jaqueta',
     statusTag: '-20%',
+    genero: 'masculino',
     imageUrl: '/images/windbreaker_jacket.png',
   },
   {
@@ -35,7 +38,19 @@ const featuredPecas: CardPecaProps[] = [
     tamanho: 'Tam. G',
     categoria: 'Jaqueta',
     statusTag: 'DISPONÍVEL',
+    genero: 'masculino',
     imageUrl: '/images/olive_jacket.png',
+  },
+  {
+    id: '4',
+    nome: 'Vestido Floral Estampado Vintage',
+    brecho: 'Brechó Aurora',
+    preco: 'R$ 75,00',
+    tamanho: 'Tam. P',
+    categoria: 'Vestidos',
+    statusTag: 'DISPONÍVEL',
+    genero: 'feminino',
+    imageUrl: '/images/vintage_shirt.png',
   },
 ]
 
@@ -67,6 +82,7 @@ const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
 
 export default function Home() {
   const navigate = useNavigate()
+  const [selectedGender, setSelectedGender] = useState<'todos' | 'feminino' | 'masculino'>('todos')
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -77,6 +93,10 @@ export default function Home() {
   const handleTagClick = (tag: string) => {
     navigate(`/brechos?q=${encodeURIComponent(tag)}`)
   }
+
+  const filteredPecas = featuredPecas.filter(
+    (p) => selectedGender === 'todos' || p.genero === selectedGender
+  )
 
   return (
     <div className="home-layout">
@@ -128,13 +148,39 @@ export default function Home() {
           {/* RIGHT PRODUCTS AREA */}
           <section className="catalog-products">
             <div className="catalog-header">
-              <span className="catalog-header__eyebrow">SELEÇÃO DA SEMANA</span>
-              <h2 className="catalog-header__title">Peças em destaque</h2>
-              <p className="catalog-header__count">128 resultados para "Jaquetas"</p>
+              <div>
+                <span className="catalog-header__eyebrow">SELEÇÃO DA SEMANA</span>
+                <h2 className="catalog-header__title">Peças em destaque</h2>
+              </div>
+
+              {/* HOME CATEGORY SWITCH */}
+              <div className="home-gender-switch">
+                <button
+                  type="button"
+                  className={`gender-switch-btn ${selectedGender === 'todos' ? 'is-active' : ''}`}
+                  onClick={() => setSelectedGender('todos')}
+                >
+                  Todos
+                </button>
+                <button
+                  type="button"
+                  className={`gender-switch-btn ${selectedGender === 'feminino' ? 'is-active' : ''}`}
+                  onClick={() => setSelectedGender('feminino')}
+                >
+                  Feminino
+                </button>
+                <button
+                  type="button"
+                  className={`gender-switch-btn ${selectedGender === 'masculino' ? 'is-active' : ''}`}
+                  onClick={() => setSelectedGender('masculino')}
+                >
+                  Masculino
+                </button>
+              </div>
             </div>
 
             <div className="grid-3-cols">
-              {featuredPecas.map((peca) => (
+              {filteredPecas.map((peca) => (
                 <CardPeca key={peca.id} {...peca} />
               ))}
             </div>
