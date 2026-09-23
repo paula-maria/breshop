@@ -158,12 +158,6 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             Todas as Peças
           </Link>
 
-          <Link
-            to="/cadastro"
-            className={`site-header__link ${isActive('/cadastro') ? 'is-active' : ''}`}
-          >
-            Vender
-          </Link>
         </nav>
 
         {/* RIGHT ACTIONS */}
@@ -260,7 +254,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Vender / Cadastrar Brechó
+            Cadastrar Brechó
           </Link>
 
           <div className="site-header__mobile-actions">

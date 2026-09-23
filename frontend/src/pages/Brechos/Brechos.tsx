@@ -154,7 +154,7 @@ export default function Brechos() {
   const [searchQuery, setSearchQuery] = useState(queryParam)
 
   // Determine active view tab: 'feminino' | 'masculino' | 'todas' | 'lojas'
-  const activeTab = catParam || (viewParam === 'lojas' ? 'lojas' : 'todas')
+  const activeTab = catParam || (viewParam === 'pecas' ? 'todas' : 'lojas')
 
   const cities = ['Todas', 'Macapá', 'Santana']
 
