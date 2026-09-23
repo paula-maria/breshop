@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { Star, MapPin, Clock, Camera, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 
 type BrechoInfo = {
@@ -117,7 +118,11 @@ export default function BrechoDetalhes() {
           <div className="store-info-card__title-area">
             <h1 className="store-info-card__name">{brecho.nome}</h1>
             <div className="store-info-card__rating">
-              <span className="stars">★★★★★</span>
+              <span className="stars" style={{ display: 'inline-flex', gap: '2px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={16} fill="#f59e0b" stroke="#f59e0b" />
+                ))}
+              </span>
               <span className="rating-score">{brecho.rating}</span>
               <span className="reviews-count">({brecho.reviewsCount} avaliações)</span>
             </div>
@@ -126,36 +131,12 @@ export default function BrechoDetalhes() {
 
         <div className="store-info-card__meta">
           <div className="meta-item">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
+            <MapPin size={18} />
             <span>{brecho.localizacao}</span>
           </div>
 
           <div className="meta-item">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
+            <Clock size={18} />
             <span>{brecho.horario}</span>
           </div>
         </div>
@@ -168,20 +149,7 @@ export default function BrechoDetalhes() {
             rel="noopener noreferrer"
             className="btn btn-ghost store-action-btn"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-            </svg>
+            <Camera size={18} />
             Instagram
           </a>
 
@@ -190,18 +158,7 @@ export default function BrechoDetalhes() {
             className="btn btn-primary store-action-btn"
             onClick={handleWhatsappClick}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
+            <MessageCircle size={18} />
             WhatsApp
           </button>
 
@@ -211,20 +168,7 @@ export default function BrechoDetalhes() {
             rel="noopener noreferrer"
             className="btn btn-ghost store-action-btn"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-              <line x1="8" y1="2" x2="8" y2="18" />
-              <line x1="16" y1="6" x2="16" y2="22" />
-            </svg>
+            <Map size={18} />
             Como chegar
           </a>
         </div>

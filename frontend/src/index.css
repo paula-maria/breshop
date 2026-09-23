@@ -1179,6 +1179,10 @@ body {
 .account-type-icon {
   font-size: 2rem;
   margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy-dark);
 }
 
 .account-type-title {

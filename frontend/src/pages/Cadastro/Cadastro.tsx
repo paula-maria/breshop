@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { ShoppingBag, Store, CheckCircle2 } from 'lucide-react'
 
 export default function Cadastro() {
   const navigate = useNavigate()
@@ -80,7 +81,9 @@ export default function Cadastro() {
 
         {successMsg ? (
           <div className="auth-success-box">
-            <div className="auth-success-icon">✓</div>
+            <div className="auth-success-icon">
+              <CheckCircle2 size={40} />
+            </div>
             <h3>Cadastro realizado com sucesso!</h3>
             <p>Redirecionando para o seu painel de controle...</p>
           </div>
@@ -97,7 +100,9 @@ export default function Cadastro() {
                     }`}
                     onClick={() => setAccountType('comprador')}
                   >
-                    <div className="account-type-icon">🛍️</div>
+                    <div className="account-type-icon">
+                      <ShoppingBag size={28} />
+                    </div>
                     <div className="account-type-title">Quero Comprar</div>
                     <div className="account-type-desc">
                       Descobrir peças e entrar em contato com brechós
@@ -111,7 +116,9 @@ export default function Cadastro() {
                     }`}
                     onClick={() => setAccountType('brecho')}
                   >
-                    <div className="account-type-icon">🏪</div>
+                    <div className="account-type-icon">
+                      <Store size={28} />
+                    </div>
                     <div className="account-type-title">Tenho um Brechó</div>
                     <div className="account-type-desc">
                       Divulgar meu catálogo e receber contatos no WhatsApp

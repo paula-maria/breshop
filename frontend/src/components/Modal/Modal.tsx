@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
 
 type ModalProps = {
   isOpen: boolean
@@ -16,7 +17,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         <div className="modal__header">
           {title && <h3>{title}</h3>}
           <button type="button" className="modal__close" onClick={onClose} aria-label="Fechar modal">
-            ×
+            <X size={18} />
           </button>
         </div>
         <div className="modal__content">{children}</div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Store, MapPin } from 'lucide-react'
 
 export type CardBrechoProps = {
   id: string | number
@@ -25,7 +26,9 @@ export default function CardBrecho({
           <img src={imageUrl} alt={nome} className="card-brecho__img" />
         ) : (
           <div className="card-brecho__banner-illustration">
-            <div className="banner-icon-badge">🏪</div>
+            <div className="banner-icon-badge">
+              <Store size={28} />
+            </div>
             <span className="banner-store-tag">{nome.toUpperCase()}</span>
           </div>
         )}
@@ -34,20 +37,7 @@ export default function CardBrecho({
       <div className="card-brecho__content">
         <h4 className="card-brecho__title">{nome}</h4>
         <p className="card-brecho__location">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+          <MapPin size={14} aria-hidden="true" />
           {localizacao}
         </p>
         {descricao && <p className="card-brecho__desc">{descricao}</p>}

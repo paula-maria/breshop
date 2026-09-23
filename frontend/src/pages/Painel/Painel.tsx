@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
 
 type ItemDashboard = {
   id: string
@@ -172,20 +173,25 @@ export default function Painel() {
       <div className="dashboard-header-card">
         <div className="dashboard-header-card__top">
           <div className="store-profile-meta">
-            <div className="store-avatar-box">🏪</div>
+            <div className="store-avatar-box">
+              <Store size={24} />
+            </div>
             <div>
               <div className="store-badge-status">
                 <span className="dot" /> LOJA ATIVA
               </div>
               <h1 className="dashboard-store-name">{storeData.nome}</h1>
               <p className="dashboard-store-location">
-                📍 {storeData.localizacao} · 🕐 {storeData.horario}
+                <MapPin size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                {storeData.localizacao} ·{' '}
+                <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
+                {storeData.horario}
               </p>
             </div>
           </div>
 
-          <Link to="/brechos/1" className="btn btn-ghost btn-sm">
-            Ver minha loja pública ↗
+          <Link to="/brechos/1" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            Ver minha loja pública <ExternalLink size={14} />
           </Link>
         </div>
 
@@ -246,8 +252,9 @@ export default function Painel() {
               type="button"
               className="btn btn-cyan-pill"
               onClick={() => setIsModalOpen(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              + Cadastrar Nova Peça
+              <Plus size={16} /> Cadastrar Nova Peça
             </button>
           </div>
 
@@ -415,7 +422,7 @@ export default function Painel() {
                 className="modal-close-btn"
                 onClick={() => setIsModalOpen(false)}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 

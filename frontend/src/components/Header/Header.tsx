@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Store, MapPin, Sparkles, ChevronDown, Menu, X } from 'lucide-react'
 
 type HeaderProps = {
   isLoggedIn?: boolean
@@ -63,22 +64,13 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
               aria-expanded={brechoDropdownOpen}
             >
               Brechós
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <ChevronDown
+                size={14}
                 style={{
                   transform: brechoDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s ease',
                 }}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              />
             </button>
 
             {/* DROPDOWN MENU */}
@@ -89,7 +81,9 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                   className="dropdown-item"
                   onClick={() => setBrechoDropdownOpen(false)}
                 >
-                  <span className="dropdown-item__icon">🏪</span>
+                  <span className="dropdown-item__icon">
+                    <Store size={18} />
+                  </span>
                   <div className="dropdown-item__content">
                     <span className="dropdown-item__title">Todos os Brechós</span>
                     <span className="dropdown-item__desc">Explorar lista completa</span>
@@ -101,7 +95,9 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                   className="dropdown-item"
                   onClick={() => setBrechoDropdownOpen(false)}
                 >
-                  <span className="dropdown-item__icon">📍</span>
+                  <span className="dropdown-item__icon">
+                    <MapPin size={18} />
+                  </span>
                   <div className="dropdown-item__content">
                     <span className="dropdown-item__title">Brechós em Macapá</span>
                     <span className="dropdown-item__desc">Ver lojas na capital</span>
@@ -113,7 +109,9 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                   className="dropdown-item"
                   onClick={() => setBrechoDropdownOpen(false)}
                 >
-                  <span className="dropdown-item__icon">📍</span>
+                  <span className="dropdown-item__icon">
+                    <MapPin size={18} />
+                  </span>
                   <div className="dropdown-item__content">
                     <span className="dropdown-item__title">Brechós em Santana</span>
                     <span className="dropdown-item__desc">Ver lojas na região</span>
@@ -127,7 +125,9 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
                   className="dropdown-item is-highlight"
                   onClick={() => setBrechoDropdownOpen(false)}
                 >
-                  <span className="dropdown-item__icon">✨</span>
+                  <span className="dropdown-item__icon">
+                    <Sparkles size={18} />
+                  </span>
                   <div className="dropdown-item__content">
                     <span className="dropdown-item__title">Cadastrar meu Brechó</span>
                     <span className="dropdown-item__desc">Divulgue seu catálogo</span>
@@ -184,29 +184,7 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             aria-expanded={mobileMenuOpen}
             aria-label="Abrir menu de navegação"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {mobileMenuOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </>
-              )}
-            </svg>
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
