@@ -17,7 +17,6 @@
 | Stakeholder | Estratégia |
 | --- | --- |
 | Equipe do projeto | Reuniões periódicas, acompanhamento de tarefas e decisões colaborativas |
-| Professor/orientador | Apresentação de entregas, validação e feedback periódico |
 | Proprietários de brechós | Entrevistas, validação de requisitos, testes e feedback sobre cadastro/chat/negociação |
 | Compradores | Pesquisas, entrevistas e testes de usabilidade |
 | Funcionários dos brechós | Testes do painel e do fluxo de atendimento |
