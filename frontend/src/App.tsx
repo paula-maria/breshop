@@ -8,12 +8,26 @@ import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
+import FilterSidebar from './components/FilterSidebar/FilterSidebar'
 
-function PageLayout({ children }: { children: React.ReactNode }) {
+function PageLayout({
+  children,
+  showSidebar = true,
+}: {
+  children: React.ReactNode
+  showSidebar?: boolean
+}) {
   return (
     <div className="home-layout">
       <Header />
-      <main className="home-main app-content-wrapper">{children}</main>
+      <div className="app-main-layout-container">
+        {showSidebar && (
+          <aside className="app-sidebar-column">
+            <FilterSidebar />
+          </aside>
+        )}
+        <main className="home-main app-content-wrapper">{children}</main>
+      </div>
       <Footer />
     </div>
   )
@@ -23,11 +37,18 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <PageLayout showSidebar={true}>
+              <Home />
+            </PageLayout>
+          }
+        />
         <Route
           path="/login"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={false}>
               <Login />
             </PageLayout>
           }
@@ -35,7 +56,7 @@ export default function App() {
         <Route
           path="/cadastro"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={false}>
               <Cadastro />
             </PageLayout>
           }
@@ -43,7 +64,7 @@ export default function App() {
         <Route
           path="/brechos"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={true}>
               <Brechos />
             </PageLayout>
           }
@@ -51,7 +72,7 @@ export default function App() {
         <Route
           path="/brechos/:id"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={true}>
               <BrechoDetalhes />
             </PageLayout>
           }
@@ -59,7 +80,7 @@ export default function App() {
         <Route
           path="/pecas/:id"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={true}>
               <PecaDetalhes />
             </PageLayout>
           }
@@ -67,7 +88,7 @@ export default function App() {
         <Route
           path="/painel"
           element={
-            <PageLayout>
+            <PageLayout showSidebar={false}>
               <Painel />
             </PageLayout>
           }

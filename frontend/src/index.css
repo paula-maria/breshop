@@ -2297,3 +2297,95 @@ body {
   color: var(--navy-dark);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
+
+/* GLOBAL PERSISTENT STICKY SIDEBAR LAYOUT */
+.app-main-layout-container {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+  gap: 2rem;
+  width: 100%;
+}
+
+.app-sidebar-column {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.app-sidebar-column::-webkit-scrollbar {
+  width: 4px;
+}
+
+.app-sidebar-column::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.filter-gender-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.gender-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: var(--text-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gender-filter-btn:hover {
+  border-color: var(--cyan-primary);
+  color: var(--cyan-primary);
+}
+
+.gender-filter-btn.is-active {
+  background: var(--navy-dark);
+  color: #ffffff;
+  border-color: var(--navy-dark);
+}
+
+.filter-sidebar__reset-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.filter-sidebar__reset-btn:hover {
+  color: #ef4444;
+}
+
+@media (max-width: 1023px) {
+  .app-main-layout-container {
+    flex-direction: column;
+    padding: 1rem 1rem 3rem;
+  }
+
+  .app-sidebar-column {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+}

@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import Header from '../../components/Header/Header'
 import SearchBar from '../../components/SearchBar/SearchBar'
-import FilterSidebar from '../../components/FilterSidebar/FilterSidebar'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
-import Footer from '../../components/Footer/Footer'
 
 const featuredPecas: (CardPecaProps & { genero: 'feminino' | 'masculino' })[] = [
   {
@@ -99,131 +96,119 @@ export default function Home() {
   )
 
   return (
-    <div className="home-layout">
-      <Header />
+    <div className="home-content">
+      {/* HERO SECTION */}
+      <section className="hero-section">
+        <div className="hero-section__content">
+          <span className="hero-section__eyebrow">MODA CIRCULAR BRASILEIRA</span>
 
-      <main className="home-main">
-        {/* HERO SECTION */}
-        <section className="hero-section">
-          <div className="hero-section__content">
-            <span className="hero-section__eyebrow">MODA CIRCULAR BRASILEIRA</span>
+          <h1 className="hero-section__title">
+            Moda com história, <br />
+            <span className="hero-section__title-cyan">curadoria brasileira.</span>
+          </h1>
 
-            <h1 className="hero-section__title">
-              Moda com história, <br />
-              <span className="hero-section__title-cyan">curadoria brasileira.</span>
-            </h1>
+          <p className="hero-section__subtitle">
+            Descubra peças únicas selecionadas por brechós de todo o Brasil.
+          </p>
 
-            <p className="hero-section__subtitle">
-              Descubra peças únicas selecionadas por brechós de todo o Brasil.
-            </p>
-
-            <div className="hero-section__search">
-              <SearchBar onSearch={handleSearch} />
-            </div>
-
-            {/* TRENDING TAGS */}
-            <div className="hero-section__trending">
-              <span className="trending-label">Em alta:</span>
-              <div className="trending-pills">
-                {trendingTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    className="trending-pill"
-                    onClick={() => handleTagClick(tag)}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="hero-section__search">
+            <SearchBar onSearch={handleSearch} />
           </div>
-        </section>
 
-        {/* MAIN TWO-COLUMN SECTION WITH FILTER SIDEBAR */}
-        <div className="catalog-container">
-          {/* LEFT SIDEBAR */}
-          <FilterSidebar />
-
-          {/* RIGHT PRODUCTS AREA */}
-          <section className="catalog-products">
-            <div className="catalog-header">
-              <div>
-                <span className="catalog-header__eyebrow">SELEÇÃO DA SEMANA</span>
-                <h2 className="catalog-header__title">Peças em destaque</h2>
-              </div>
-
-              {/* HOME CATEGORY SWITCH */}
-              <div className="home-gender-switch">
+          {/* TRENDING TAGS */}
+          <div className="hero-section__trending">
+            <span className="trending-label">Em alta:</span>
+            <div className="trending-pills">
+              {trendingTags.map((tag) => (
                 <button
+                  key={tag}
                   type="button"
-                  className={`gender-switch-btn ${selectedGender === 'todos' ? 'is-active' : ''}`}
-                  onClick={() => setSelectedGender('todos')}
+                  className="trending-pill"
+                  onClick={() => handleTagClick(tag)}
                 >
-                  Todos
+                  {tag}
                 </button>
-                <button
-                  type="button"
-                  className={`gender-switch-btn ${selectedGender === 'feminino' ? 'is-active' : ''}`}
-                  onClick={() => setSelectedGender('feminino')}
-                >
-                  Feminino
-                </button>
-                <button
-                  type="button"
-                  className={`gender-switch-btn ${selectedGender === 'masculino' ? 'is-active' : ''}`}
-                  onClick={() => setSelectedGender('masculino')}
-                >
-                  Masculino
-                </button>
-              </div>
-            </div>
-
-            <div className="grid-3-cols">
-              {filteredPecas.map((peca) => (
-                <CardPeca key={peca.id} {...peca} />
               ))}
             </div>
-          </section>
+          </div>
         </div>
+      </section>
 
-        {/* EXPLORE BRECHÓS SECTION WITH VER MAIS LINK */}
-        <section className="home-section explore-brechos-section">
-          <div className="home-section__header-row">
-            <h2 className="home-section__title">EXPLORE BRECHÓS</h2>
-            <Link to="/brechos" className="see-more-link">
-              Ver todos os brechós <span className="arrow">→</span>
-            </Link>
+      {/* PRODUCTS SECTION */}
+      <section className="catalog-products">
+        <div className="catalog-header">
+          <div>
+            <span className="catalog-header__eyebrow">SELEÇÃO DA SEMANA</span>
+            <h2 className="catalog-header__title">Peças em destaque</h2>
           </div>
 
-          <div className="grid-3-cols">
-            {exploreBrechos.map((brecho) => (
-              <CardBrecho key={brecho.id} {...brecho} />
-            ))}
-          </div>
-        </section>
-
-        {/* CTA PARA PROPRIETÁRIOS */}
-        <section className="owner-cta-section">
-          <div className="owner-cta-card">
-            <h2 className="owner-cta-title">
-              TEM UM BRECHÓ? DIVULGUE SUAS PEÇAS
-            </h2>
-            <p className="owner-cta-subtitle">
-              Cadastre seu brechó e alcance novos compradores em todo o Brasil.
-            </p>
+          {/* HOME CATEGORY SWITCH */}
+          <div className="home-gender-switch">
             <button
               type="button"
-              className="btn btn-cyan-pill owner-cta-btn"
-              onClick={() => navigate('/cadastro')}
+              className={`gender-switch-btn ${selectedGender === 'todos' ? 'is-active' : ''}`}
+              onClick={() => setSelectedGender('todos')}
             >
-              Cadastrar brechó
+              Todos
+            </button>
+            <button
+              type="button"
+              className={`gender-switch-btn ${selectedGender === 'feminino' ? 'is-active' : ''}`}
+              onClick={() => setSelectedGender('feminino')}
+            >
+              Feminino
+            </button>
+            <button
+              type="button"
+              className={`gender-switch-btn ${selectedGender === 'masculino' ? 'is-active' : ''}`}
+              onClick={() => setSelectedGender('masculino')}
+            >
+              Masculino
             </button>
           </div>
-        </section>
-      </main>
+        </div>
 
-      <Footer />
+        <div className="grid-3-cols">
+          {filteredPecas.map((peca) => (
+            <CardPeca key={peca.id} {...peca} />
+          ))}
+        </div>
+      </section>
+
+      {/* EXPLORE BRECHÓS SECTION WITH VER MAIS LINK */}
+      <section className="home-section explore-brechos-section">
+        <div className="home-section__header-row">
+          <h2 className="home-section__title">EXPLORE BRECHÓS</h2>
+          <Link to="/brechos" className="see-more-link">
+            Ver todos os brechós <span className="arrow">→</span>
+          </Link>
+        </div>
+
+        <div className="grid-3-cols">
+          {exploreBrechos.map((brecho) => (
+            <CardBrecho key={brecho.id} {...brecho} />
+          ))}
+        </div>
+      </section>
+
+      {/* CTA PARA PROPRIETÁRIOS */}
+      <section className="owner-cta-section">
+        <div className="owner-cta-card">
+          <h2 className="owner-cta-title">
+            TEM UM BRECHÓ? DIVULGUE SUAS PEÇAS
+          </h2>
+          <p className="owner-cta-subtitle">
+            Cadastre seu brechó e alcance novos compradores em todo o Brasil.
+          </p>
+          <button
+            type="button"
+            className="btn btn-cyan-pill owner-cta-btn"
+            onClick={() => navigate('/cadastro')}
+          >
+            Cadastrar brechó
+          </button>
+        </div>
+      </section>
     </div>
   )
 }
