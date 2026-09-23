@@ -6,6 +6,7 @@ import Brechos from './pages/Brechos/Brechos'
 import BrechoDetalhes from './pages/BrechoDetalhes/BrechoDetalhes'
 import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
+import NotFound from './pages/NotFound/NotFound'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
 import FilterSidebar from './components/FilterSidebar/FilterSidebar'
@@ -90,6 +91,14 @@ export default function App() {
           element={
             <PageLayout showSidebar={false}>
               <Painel />
+            </PageLayout>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <PageLayout showSidebar={false}>
+              <NotFound />
             </PageLayout>
           }
         />

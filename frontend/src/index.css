@@ -2389,3 +2389,46 @@ body {
     max-height: none;
   }
 }
+
+/* 404 NOT FOUND PAGE STYLES */
+.not-found-simple-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 3rem 1rem;
+  width: 100%;
+}
+
+.not-found-big-404 {
+  font-size: 7.5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--navy-dark);
+  margin-bottom: 0.5rem;
+}
+
+.not-found-simple-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+  margin-bottom: 0.5rem;
+}
+
+.not-found-simple-desc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 440px;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.not-found-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.6rem;
+}
