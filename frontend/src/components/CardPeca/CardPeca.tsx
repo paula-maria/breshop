@@ -20,10 +20,38 @@ export default function CardPeca({
   brecho,
   preco,
   tamanho,
+  categoria,
+  condicao,
   statusTag = 'DISPONÍVEL',
   imageUrl,
 }: CardPecaProps) {
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(() => {
+    const saved = localStorage.getItem('breshop_favoritos')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      return parsed.some((item: any) => item.id === id)
+    }
+    return false
+  })
+
+  const toggleLike = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newLiked = !liked
+    setLiked(newLiked)
+
+    const saved = localStorage.getItem('breshop_favoritos')
+    let favorites = saved ? JSON.parse(saved) : []
+
+    if (newLiked) {
+      favorites.push({ id, nome, brecho, preco, tamanho, categoria, condicao, statusTag, imageUrl })
+    } else {
+      favorites = favorites.filter((item: any) => item.id !== id)
+    }
+
+    localStorage.setItem('breshop_favoritos', JSON.stringify(favorites))
+    window.dispatchEvent(new Event('favoritesUpdated'))
+  }
 
   return (
     <article className="featured-card">
@@ -53,11 +81,7 @@ export default function CardPeca({
         <button
           type="button"
           className={`featured-card__heart-btn ${liked ? 'is-liked' : ''}`}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setLiked((prev) => !prev)
-          }}
+          onClick={toggleLike}
           aria-label="Adicionar aos favoritos"
         >
           <Heart

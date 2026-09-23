@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Store, MapPin, Sparkles, ChevronDown, Menu, X } from 'lucide-react'
+import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart } from 'lucide-react'
 
 type HeaderProps = {
   isLoggedIn?: boolean
@@ -10,8 +10,23 @@ type HeaderProps = {
 export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brechoDropdownOpen, setBrechoDropdownOpen] = useState(false)
+  const [favoritesCount, setFavoritesCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
+
+  useEffect(() => {
+    const updateCount = () => {
+      const saved = localStorage.getItem('breshop_favoritos')
+      if (saved) {
+        setFavoritesCount(JSON.parse(saved).length)
+      } else {
+        setFavoritesCount(0)
+      }
+    }
+    updateCount()
+    window.addEventListener('favoritesUpdated', updateCount)
+    return () => window.removeEventListener('favoritesUpdated', updateCount)
+  }, [])
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
@@ -162,6 +177,15 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
 
         {/* RIGHT ACTIONS */}
         <div className="site-header__actions">
+          <Link to="/favoritos" className="header-favorites-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)', marginRight: '16px' }} aria-label="Favoritos">
+            <Heart size={20} />
+            {favoritesCount > 0 && (
+              <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
+                {favoritesCount}
+              </span>
+            )}
+          </Link>
+
           {isLoggedIn ? (
             <Link to="/painel" className="btn btn-ghost btn-sm">
               {userName ? `Olá, ${userName}` : 'Meu Painel'}

@@ -6,6 +6,7 @@ import Brechos from './pages/Brechos/Brechos'
 import BrechoDetalhes from './pages/BrechoDetalhes/BrechoDetalhes'
 import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
+import Favoritos from './pages/Favoritos/Favoritos'
 import NotFound from './pages/NotFound/NotFound'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
@@ -91,6 +92,14 @@ export default function App() {
           element={
             <PageLayout showSidebar={false}>
               <Painel />
+            </PageLayout>
+          }
+        />
+        <Route
+          path="/favoritos"
+          element={
+            <PageLayout showSidebar={false}>
+              <Favoritos />
             </PageLayout>
           }
         />

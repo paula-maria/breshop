@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronLeft, RotateCcw, Filter, Shirt } from 'lucide-react'
+import './FilterSidebarDrawer.css'
+import { ChevronLeft, RotateCcw, Filter, Shirt, X } from 'lucide-react'
 
 export default function FilterSidebar() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   // URL State values
   const catParam = searchParams.get('cat') || ''
@@ -58,7 +60,21 @@ export default function FilterSidebar() {
   const hasActiveFilters = Boolean(catParam || sizeParam || conditionParam)
 
   return (
-    <aside className={`filter-sidebar ${collapsed ? 'is-collapsed' : ''}`}>
+    <>
+      <button
+        type="button"
+        className="mobile-filter-toggle-btn"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir filtros"
+      >
+        <Filter size={18} /> Filtros
+      </button>
+
+      {mobileOpen && (
+        <div className="mobile-filter-backdrop" onClick={() => setMobileOpen(false)} />
+      )}
+
+      <aside className={`filter-sidebar ${collapsed ? 'is-collapsed' : ''} ${mobileOpen ? 'is-mobile-open' : ''}`}>
       <div className="filter-sidebar__header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Filter size={18} className="text-cyan" />
@@ -78,7 +94,7 @@ export default function FilterSidebar() {
           )}
           <button
             type="button"
-            className="filter-sidebar__toggle-btn"
+            className="filter-sidebar__toggle-btn desktop-only"
             onClick={() => setCollapsed((prev) => !prev)}
             aria-label="Alternar filtros"
           >
@@ -89,6 +105,14 @@ export default function FilterSidebar() {
                 transition: 'transform 0.2s ease',
               }}
             />
+          </button>
+          <button
+            type="button"
+            className="mobile-close-btn mobile-only"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Fechar filtros"
+          >
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -184,5 +208,6 @@ export default function FilterSidebar() {
         </div>
       )}
     </aside>
+    </>
   )
 }

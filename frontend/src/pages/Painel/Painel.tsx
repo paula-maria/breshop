@@ -1,6 +1,8 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
+import Toast, { type ToastType } from '../../components/Toast/Toast'
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 
 type ItemDashboard = {
   id: string
@@ -110,6 +112,22 @@ export default function Painel() {
 
   const [filterQuery, setFilterQuery] = useState('')
 
+  // Toast state
+  const [toast, setToast] = useState<{ isOpen: boolean; message: string; type: ToastType }>({
+    isOpen: false,
+    message: '',
+    type: 'success',
+  })
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ isOpen: true, message, type })
+  }
+
+  // ConfirmModal state
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; itemId: string | null }>({
+    isOpen: false,
+    itemId: null,
+  })
   useEffect(() => {
     localStorage.setItem('breshop_dashboard_items', JSON.stringify(items))
   }, [items])
@@ -127,10 +145,16 @@ export default function Painel() {
     )
   }
 
-  const handleDeleteItem = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta peça do seu catálogo?')) {
-      setItems((prev) => prev.filter((item) => item.id !== id))
+  const handleDeleteClick = (id: string) => {
+    setConfirmModal({ isOpen: true, itemId: id })
+  }
+
+  const handleConfirmDelete = () => {
+    if (confirmModal.itemId) {
+      setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
+      showToast('Peça excluída do catálogo.', 'success')
     }
+    setConfirmModal({ isOpen: false, itemId: null })
   }
 
   const handleCreateItemSubmit = (e: FormEvent) => {
@@ -150,6 +174,7 @@ export default function Painel() {
 
     setItems((prev) => [created, ...prev])
     setIsModalOpen(false)
+    showToast('Peça cadastrada com sucesso!', 'success')
     setNewItem({
       nome: '',
       preco: '',
@@ -298,7 +323,7 @@ export default function Painel() {
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm text-danger"
-                      onClick={() => handleDeleteItem(item.id)}
+                      onClick={() => handleDeleteClick(item.id)}
                     >
                       Excluir
                     </button>
@@ -320,7 +345,7 @@ export default function Painel() {
               onSubmit={(e) => {
                 e.preventDefault()
                 localStorage.setItem('breshop_user_store', JSON.stringify(storeData))
-                alert('Dados do brechó atualizados com sucesso!')
+                showToast('Dados do brechó atualizados com sucesso!', 'success')
               }}
               className="auth-form"
             >
@@ -560,6 +585,22 @@ export default function Painel() {
           </div>
         </div>
       )}
+
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Excluir Peça"
+        message="Tem certeza que deseja excluir esta peça do seu catálogo?"
+        confirmText="Excluir"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, itemId: null })}
+      />
     </div>
   )
 }
