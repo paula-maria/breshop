@@ -3,8 +3,11 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { routes } from './routes'
 import path from 'path'
+import { HealthController } from './controllers/HealthController'
 
 const app = express()
+
+const healthController = new HealthController()
 
 app.use(cors({
   origin: 'http://localhost:5173', // Frontend do Vite
@@ -15,6 +18,8 @@ app.use(cookieParser())
 
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
+
+app.get('/', healthController.check.bind(healthController))
 
 app.use('/api', routes)
 
