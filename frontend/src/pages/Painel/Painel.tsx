@@ -4,7 +4,7 @@ import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { api } from '../../services/api'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 type ItemDashboard = {
   id: string
@@ -19,14 +19,32 @@ type ItemDashboard = {
 
 type StoreInfo = {
   nome: string
-  localizacao: string
+  descricao?: string
+  logoUrl?: string
+  capaUrl?: string
+  telefone?: string
   whatsapp: string
-  instagram: string
-  horario: string
+  emailContato?: string
+  instagram?: string
+  site?: string
+  cep?: string
+  rua?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  horarios?: string
+  formasPagamento: string[]
+  atendimento?: string
+  entrega: boolean
+  retirada: boolean
+  negociacao: boolean
 }
 
 export default function Painel() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState<'pecas' | 'perfil'>('pecas')
   const [items, setItems] = useState<ItemDashboard[]>([])
   const [storeData, setStoreData] = useState<StoreInfo | null>(null)
@@ -38,11 +56,7 @@ export default function Painel() {
         const res = await api.get('/brechos/minha-loja')
         const data = res.data
         setStoreData({
-          nome: data.nome,
-          localizacao: data.localizacao,
-          whatsapp: data.whatsapp,
-          instagram: data.instagram || '',
-          horario: data.horario || '',
+          ...data
         })
         
         if (data.pecas) {
@@ -113,6 +127,16 @@ export default function Painel() {
       )
     )
   }
+
+  useEffect(() => {
+    if (location.state?.toastMessage) {
+      showToast(location.state.toastMessage, 'success')
+      window.history.replaceState({}, document.title)
+    }
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab)
+    }
+  }, [location.state])
 
   const handleDeleteClick = (id: string) => {
     setConfirmModal({ isOpen: true, itemId: id })
@@ -202,9 +226,9 @@ export default function Painel() {
               <h1 className="dashboard-store-name">{storeData.nome}</h1>
               <p className="dashboard-store-location">
                 <MapPin size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-                {storeData.localizacao} ·{' '}
+                {storeData.cidade ? `${storeData.cidade} - ${storeData.estado}` : 'Localização pendente'} ·{' '}
                 <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
-                {storeData.horario}
+                {storeData.horarios || 'Horários não definidos'}
               </p>
             </div>
           </div>
@@ -332,97 +356,106 @@ export default function Painel() {
       {/* TAB 2: DADOS DO BRECHÓ */}
       {activeTab === 'perfil' && (
         <div className="dashboard-section">
-          <div className="profile-edit-card">
-            <h2 className="section-title">Informações do Brechó</h2>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                localStorage.setItem('breshop_user_store', JSON.stringify(storeData))
-                showToast('Dados do brechó atualizados com sucesso!', 'success')
-              }}
-              className="auth-form"
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="section-title" style={{ margin: 0 }}>Informações do Brechó</h2>
+            <button 
+              className="btn btn-ghost" 
+              onClick={() => navigate('/onboarding-brecho')}
             >
-              <div className="form-group">
-                <label className="form-label">Nome do Brechó</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={storeData.nome}
-                  onChange={(e) =>
-                    setStoreData((prev) => ({ ...prev, nome: e.target.value }))
-                  }
-                />
+              Editar Dados
+            </button>
+          </div>
+
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            
+            {/* INFORMAÇÕES BÁSICAS */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>NOME DO BRECHÓ</strong>
+                <p style={{ marginTop: '6px', fontSize: '1.1rem', fontWeight: 600, color: '#0f172a' }}>{storeData.nome}</p>
               </div>
-
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label className="form-label">Localização</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.localizacao}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        localizacao: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">WhatsApp de Contato</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.whatsapp}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        whatsapp: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>WHATSAPP</strong>
+                <p style={{ marginTop: '6px', fontSize: '1.1rem', color: '#0f172a' }}>{storeData.whatsapp}</p>
               </div>
-
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label className="form-label">Instagram</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.instagram}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        instagram: e.target.value,
-                      }))
-                    }
-                  />
+              {storeData.descricao && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>DESCRIÇÃO</strong>
+                  <p style={{ marginTop: '6px', color: '#334155', lineHeight: '1.6' }}>{storeData.descricao}</p>
                 </div>
+              )}
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">Horário de Funcionamento</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.horario}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        horario: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* CONTATOS SECUNDÁRIOS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>E-MAIL CONTATO</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.emailContato || '-'}</p>
               </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>TELEFONE FIXO</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.telefone || '-'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>INSTAGRAM</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.instagram || '-'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>SITE OFICIAL</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.site || '-'}</p>
+              </div>
+            </div>
 
-              <button type="submit" className="btn btn-cyan-pill">
-                Salvar Alterações
-              </button>
-            </form>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* ENDEREÇO */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ENDEREÇO E LOCALIZAÇÃO</strong>
+                {storeData.rua ? (
+                  <>
+                    <p style={{ marginTop: '8px', fontSize: '1.1rem', color: '#0f172a' }}>
+                      {storeData.rua}, {storeData.numero} {storeData.complemento ? `(${storeData.complemento})` : ''} - {storeData.bairro}
+                    </p>
+                    <p style={{ marginTop: '4px', color: '#64748b' }}>
+                      {storeData.cidade} - {storeData.estado} | CEP: {storeData.cep}
+                    </p>
+                  </>
+                ) : (
+                  <p style={{ marginTop: '8px', color: '#94a3b8' }}>Nenhum endereço cadastrado</p>
+                )}
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* INFORMAÇÕES COMERCIAIS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>HORÁRIOS</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.horarios || 'Não informados'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>FAZ ENTREGA?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.entrega ? 600 : 400, color: storeData.entrega ? '#10b981' : '#64748b' }}>
+                  {storeData.entrega ? 'Sim' : 'Não'}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>PERMITE RETIRADA?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.retirada ? 600 : 400, color: storeData.retirada ? '#10b981' : '#64748b' }}>
+                  {storeData.retirada ? 'Sim' : 'Não'}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ACEITA NEGOCIAÇÃO?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.negociacao ? 600 : 400, color: storeData.negociacao ? '#10b981' : '#64748b' }}>
+                  {storeData.negociacao ? 'Sim' : 'Não'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

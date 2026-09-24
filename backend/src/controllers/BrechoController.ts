@@ -17,7 +17,7 @@ const createBrechoSchema = z.object({
   site: z.string().optional(),
 
   // 03 - Endereço
-  cep: z.string().optional(),
+  cep: z.string().min(8, 'CEP é obrigatório'),
   rua: z.string().optional(),
   numero: z.string().optional(),
   complemento: z.string().optional(),
@@ -46,24 +46,16 @@ export class BrechoController {
 
       const data = createBrechoSchema.parse(req.body)
 
-      // Verifica se o usuário já tem um brechó
-      const existingBrecho = await prisma.brecho.findUnique({
-        where: { userId: req.user.id }
-      })
-
-      if (existingBrecho) {
-        res.status(400).json({ error: 'Você já possui um brechó cadastrado' })
-        return
-      }
-
-      const brecho = await prisma.brecho.create({
-        data: {
+      const brecho = await prisma.brecho.upsert({
+        where: { userId: req.user.id },
+        update: { ...data },
+        create: {
           ...data,
           userId: req.user.id,
         }
       })
 
-      res.status(201).json(brecho)
+      res.status(200).json(brecho)
     } catch (error: any) {
       res.status(400).json({ error: error.message || 'Erro ao criar brechó' })
     }

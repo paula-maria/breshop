@@ -185,7 +185,7 @@ export default function Header() {
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/'} className="btn btn-ghost btn-sm">
-                Olá, {user.name.split(' ')[0]}
+                Olá, {user.name ? user.name.split(' ')[0] : 'Usuário'}
               </Link>
               <button 
                 type="button" 

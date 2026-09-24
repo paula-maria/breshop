@@ -57,7 +57,7 @@ export class PecaController {
         } : undefined,
         include: {
           brecho: {
-            select: { nome: true, localizacao: true }
+            select: { nome: true, cidade: true, estado: true }
           }
         },
         orderBy: { createdAt: 'desc' }
