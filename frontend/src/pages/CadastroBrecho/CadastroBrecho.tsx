@@ -182,11 +182,19 @@ export default function CadastroBrecho() {
     
     data.horarios = `${segSex} | ${sab} | ${dom}`
 
+    // Remover máscaras antes de enviar ao backend
+    const payload = {
+      ...data,
+      whatsapp: data.whatsapp ? data.whatsapp.replace(/\D/g, '') : data.whatsapp,
+      telefone: data.telefone ? data.telefone.replace(/\D/g, '') : data.telefone,
+      cep: data.cep ? data.cep.replace(/\D/g, '') : data.cep,
+    }
+
     try {
-      await api.post('/brechos', data)
+      await api.post('/brechos', payload)
       navigate('/painel', { state: { toastMessage: isEditing ? 'Dados do brechó atualizados com sucesso!' : 'Brechó cadastrado com sucesso!', tab: 'perfil' } })
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.error || 'Erro ao cadastrar brechó')
+      setErrorMsg(err.response?.data?.error || 'Erro ao salvar brechó')
     }
   }
 

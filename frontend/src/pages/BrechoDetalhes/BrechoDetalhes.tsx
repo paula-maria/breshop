@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { Star, MapPin, Clock, Camera, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import { api } from '../../services/api'
@@ -23,6 +23,7 @@ export default function BrechoDetalhes() {
   const [brecho, setBrecho] = useState<BrechoInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todas')
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     async function fetchBrecho() {
@@ -67,10 +68,28 @@ export default function BrechoDetalhes() {
   if (loading) return <div style={{ padding: 60, textAlign: 'center' }}>Carregando perfil oficial do brechó...</div>
   if (!brecho) return <div style={{ padding: 60, textAlign: 'center' }}>Brechó não encontrado.</div>
 
-  const filteredPecas =
-    activeCategoryFilter === 'Todas'
-      ? brecho.pecas
-      : brecho.pecas.filter((p) => p.categoria === activeCategoryFilter)
+  // Leitura dos filtros da sidebar
+  const searchCatParams = searchParams.get('categoria') ? searchParams.get('categoria')!.split(',') : []
+  const searchTipoParams = searchParams.get('tipo') ? searchParams.get('tipo')!.split(',') : []
+  const searchTamanhoParams = searchParams.get('tamanho') ? searchParams.get('tamanho')!.split(',') : []
+  const searchCondicaoParams = searchParams.get('condicao') ? searchParams.get('condicao')!.split(',') : []
+  const disponivelFilter = searchParams.get('disponivel') === 'true'
+
+  const filteredPecas = brecho.pecas.filter((p) => {
+    const matchesLocalCat = activeCategoryFilter === 'Todas' || p.categoria === activeCategoryFilter
+    
+    // Filtros complexos (sidebar)
+    const matchesCat = searchCatParams.length === 0 || (p.categoria && searchCatParams.includes(p.categoria))
+    const matchesTipo = searchTipoParams.length === 0 || searchTipoParams.some(tipo => p.nome.toLowerCase().includes(tipo.toLowerCase()))
+    const matchesCondicao = searchCondicaoParams.length === 0 || (p.condicao && searchCondicaoParams.includes(p.condicao))
+    // O backend ou mapeamento retorna o tamanho puro ou já com Tam.? 
+    // Em BrechoDetalhes o backend retorna a p.tamanho diretamente (ex: M). A interface local mapeia depois.
+    // Vamos garantir que a comparação inclua tanto M quanto Tam. M.
+    const matchesTamanho = searchTamanhoParams.length === 0 || searchTamanhoParams.some(t => p.tamanho === t || p.tamanho === `Tam. ${t}`)
+    const matchesAvail = !disponivelFilter || (p as any).disponivel === true || (p as any).statusTag === 'DISPONÍVEL' || p.statusTag === 'DISPONÍVEL'
+    
+    return matchesLocalCat && matchesCat && matchesTipo && matchesCondicao && matchesTamanho && matchesAvail
+  })
 
   const handleWhatsappClick = () => {
     const wppNumber = brecho.whatsapp.replace(/\D/g, '')

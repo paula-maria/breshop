@@ -42,6 +42,7 @@ export default function Brechos() {
           preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
           tamanho: `Tam. ${p.tamanho}`,
           categoria: p.categoria,
+          condicao: p.condicao,
           statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
           genero: 'todas', // backend doesnt have genero explicitly yet, but we have categoria
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
@@ -116,10 +117,17 @@ export default function Brechos() {
     
     // Filtros complexos (sidebar)
     const matchesCat = searchCatParams.length === 0 || (peca.categoria && searchCatParams.includes(peca.categoria))
-    const matchesTipo = searchTipoParams.length === 0 || true // tipo n existe no bd de forma estrita além da categoria
-    const matchesTamanho = searchTamanhoParams.length === 0 || (peca.tamanho && searchTamanhoParams.some(t => peca.tamanho.includes(t)))
+    
+    // Como não existe 'tipo' no BD de forma estrita, buscamos se o tipo (Camisa, Saia, etc) faz parte do nome da peça
+    const matchesTipo = searchTipoParams.length === 0 || searchTipoParams.some(tipo => peca.nome.toLowerCase().includes(tipo.toLowerCase()))
+    
+    // Condição da peça (Novo, Seminovo, etc)
+    const matchesCondicao = searchCondicaoParams.length === 0 || (peca.condicao && searchCondicaoParams.includes(peca.condicao))
+    
+    // Tamanho (como adicionamos 'Tam. ' antes, comparamos exatamente para não confundir 'G' com 'GG')
+    const matchesTamanho = searchTamanhoParams.length === 0 || searchTamanhoParams.some(t => peca.tamanho === `Tam. ${t}`)
 
-    return matchesSearch && matchesAvail && matchesCat && matchesTipo && matchesTamanho
+    return matchesSearch && matchesAvail && matchesCat && matchesTipo && matchesCondicao && matchesTamanho
   })
 
   const getTitle = () => {
