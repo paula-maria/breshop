@@ -211,6 +211,7 @@ Certifique-se de ter instalado em sua máquina:
 - [Node.js](https://nodejs.org/) (versão 18 ou superior)
 - [npm](https://www.npmjs.com/) ou `yarn` / `pnpm`
 - [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) (Para o banco de dados)
 
 ---
 
@@ -222,23 +223,44 @@ git clone https://github.com/paula-maria/breshop.git
 cd breshop
 ```
 
-#### 2. Entrar no diretório do frontend
-```bash
-cd frontend
-```
+#### 2. Configurar e rodar o Backend (API e Banco de Dados)
 
-#### 3. Instalar as dependências
+O backend depende de um banco de dados PostgreSQL, que está configurado para rodar via Docker.
+
 ```bash
+# Entre na pasta do backend
+cd backend
+
+# Suba o container do banco de dados em segundo plano
+docker compose up -d
+
+# Instale as dependências (você pode usar yarn se preferir)
 npm install
-```
 
-#### 4. Iniciar o servidor de desenvolvimento
+# Rode as migrações do banco de dados (cria as tabelas e gera o cliente do Prisma)
+npx prisma migrate dev
+
+# Inicie o servidor de desenvolvimento
+npm run dev
+```
+O servidor da API estará rodando em `http://localhost:3333`.
+
+#### 3. Configurar e rodar o Frontend
+
+Em um **novo terminal**, na raiz do projeto:
+
 ```bash
+# Entre na pasta do frontend
+cd frontend
+
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento do React
 npm run dev
 ```
 
-#### 5. Acessar no navegador
-Após rodar o comando acima, abra o seu navegador e acesse a URL exibida no terminal (por padrão: `http://localhost:5173`).
+Após rodar o comando acima, abra o seu navegador e acesse a URL exibida no terminal (por padrão: `http://localhost:5173`). O frontend já está configurado para se conectar à API no localhost.
 
 ---
 
