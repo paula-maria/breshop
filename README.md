@@ -231,20 +231,26 @@ O backend depende de um banco de dados PostgreSQL, que está configurado para ro
 # Entre na pasta do backend
 cd backend
 
-#criar um .env a partir do .env.example
+# criar um .env a partir do .env.example
 cp .env.example .env
 
-# Suba o container do banco de dados em segundo plano
-docker compose up -d
+# preencha esses elementos com suas credenciais:
+DATABASE_URL="postgresql://admin:adminpassword@localhost:5432/seu schema"]
+JWT_SECRET="troque-por-um-segredo-aleatorio-longo"
 
-# Instale as dependências (você pode usar yarn se preferir)
-npm install
+Para gerar um segredo forte no terminal, rode:
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
-# Rode as migrações do banco de dados (cria as tabelas e gera o cliente do Prisma)
-npx prisma migrate dev
+# Inicie o PostgreSQL:
+   docker compose up -d ou com db no final
 
-# Inicie o servidor de desenvolvimento
-npm run dev
+# Gere o cliente Prisma e aplique as migrações:
+   npx prisma generate
+   npx prisma migrate dev
+
+4. Inicie o backend:
+   npm run dev
+
 ```
 O servidor da API estará rodando em `http://localhost:3333`.
 
