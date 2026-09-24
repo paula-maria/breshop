@@ -6,6 +6,13 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { api } from '../../services/api'
 import { useNavigate, useLocation } from 'react-router-dom'
 
+const maskCurrency = (value: string) => {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  const num = parseInt(digits, 10) / 100
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 type ItemDashboard = {
   id: string
   nome: string
@@ -86,12 +93,13 @@ export default function Painel() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState({
     nome: '',
     preco: '',
     tamanho: 'M',
     categoria: 'Roupas',
-    condicao: 'Seminova',
+    condicao: 'Seminovo',
     imageUrl: '/images/vintage_shirt.png',
     descricao: '',
   })
@@ -190,49 +198,83 @@ export default function Painel() {
     }
   }
 
+  const handleEditClick = (item: ItemDashboard) => {
+    setEditingItemId(item.id)
+    setNewItem({
+      nome: item.nome,
+      preco: item.preco.replace('R$ ', '').replace('R$', '').trim(),
+      tamanho: item.tamanho,
+      categoria: item.categoria,
+      condicao: item.condicao,
+      imageUrl: item.imageUrl,
+      descricao: '',
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingItemId(null)
+    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', condicao: 'Seminovo', imageUrl: '/images/vintage_shirt.png', descricao: '' })
+  }
+
   const handleCreateItemSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!newItem.nome || !newItem.preco) return
 
-    const numericPrice = parseFloat(newItem.preco.replace('R$', '').replace(',', '.').trim())
+    const numericPrice = parseFloat(newItem.preco.replace(/\./g, '').replace(',', '.').trim())
 
     try {
-      const res = await api.post('/pecas', {
-        nome: newItem.nome,
-        preco: isNaN(numericPrice) ? 0 : numericPrice,
-        tamanho: newItem.tamanho,
-        categoria: newItem.categoria,
-        condicao: newItem.condicao,
-        descricao: newItem.descricao,
-        fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
-      })
-      
-      const p = res.data
-      const created: ItemDashboard = {
-        id: p.id,
-        nome: p.nome,
-        preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
-        tamanho: p.tamanho,
-        categoria: p.categoria,
-        condicao: p.condicao,
-        status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-        imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+      if (editingItemId) {
+        // EDITAR peça existente
+        const res = await api.put(`/pecas/${editingItemId}`, {
+          nome: newItem.nome,
+          preco: isNaN(numericPrice) ? 0 : numericPrice,
+          tamanho: newItem.tamanho,
+          categoria: newItem.categoria,
+          condicao: newItem.condicao,
+          descricao: newItem.descricao,
+          fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
+        })
+        const p = res.data
+        setItems((prev) => prev.map((i) => i.id === editingItemId ? {
+          ...i,
+          nome: p.nome,
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: p.tamanho,
+          categoria: p.categoria,
+          condicao: p.condicao,
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : i.imageUrl
+        } : i))
+        showToast('Peça atualizada com sucesso!', 'success')
+      } else {
+        // CRIAR nova peça
+        const res = await api.post('/pecas', {
+          nome: newItem.nome,
+          preco: isNaN(numericPrice) ? 0 : numericPrice,
+          tamanho: newItem.tamanho,
+          categoria: newItem.categoria,
+          condicao: newItem.condicao,
+          descricao: newItem.descricao,
+          fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
+        })
+        const p = res.data
+        const created: ItemDashboard = {
+          id: p.id,
+          nome: p.nome,
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: p.tamanho,
+          categoria: p.categoria,
+          condicao: p.condicao,
+          status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+        }
+        setItems((prev) => [created, ...prev])
+        showToast('Peça cadastrada com sucesso!', 'success')
       }
-
-      setItems((prev) => [created, ...prev])
-      setIsModalOpen(false)
-      showToast('Peça cadastrada com sucesso!', 'success')
-      setNewItem({
-        nome: '',
-        preco: '',
-        tamanho: 'M',
-        categoria: 'Roupas',
-        condicao: 'Seminova',
-        imageUrl: '/images/vintage_shirt.png',
-        descricao: '',
-      })
+      handleCloseModal()
     } catch (err) {
-      showToast('Erro ao cadastrar peça.', 'error')
+      showToast(editingItemId ? 'Erro ao atualizar peça.' : 'Erro ao cadastrar peça.', 'error')
     }
   }
 
@@ -372,6 +414,13 @@ export default function Painel() {
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"
+                      onClick={() => handleEditClick(item)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
                       onClick={() => toggleStatus(item.id)}
                     >
                       {item.status === 'DISPONÍVEL'
@@ -500,19 +549,19 @@ export default function Painel() {
         </div>
       )}
 
-      {/* MODAL: CADASTRAR NOVA PEÇA */}
+      {/* MODAL: CADASTRAR / EDITAR PEÇA */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-overlay" onClick={handleCloseModal}>
           <div
             className="modal-container"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <h3>Cadastrar Nova Peça</h3>
+              <h3>{editingItemId ? 'Editar Peça' : 'Cadastrar Nova Peça'}</h3>
               <button
                 type="button"
                 className="modal-close-btn"
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
               >
                 <X size={18} />
               </button>
@@ -524,7 +573,6 @@ export default function Painel() {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Ex: Vestido Floral Vintage"
                   required
                   value={newItem.nome}
                   onChange={(e) =>
@@ -536,16 +584,19 @@ export default function Painel() {
               <div className="form-row-2">
                 <div className="form-group">
                   <label className="form-label">Preço (R$) *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Ex: 45,00"
-                    required
-                    value={newItem.preco}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, preco: e.target.value }))
-                    }
-                  />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ position: 'absolute', left: '12px', color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>R$</span>
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ paddingLeft: '36px' }}
+                      required
+                      value={newItem.preco}
+                      onChange={(e) =>
+                        setNewItem((prev) => ({ ...prev, preco: maskCurrency(e.target.value) }))
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -560,12 +611,12 @@ export default function Painel() {
                       }))
                     }
                   >
+                    <option value="PP">PP</option>
                     <option value="P">P</option>
                     <option value="M">M</option>
                     <option value="G">G</option>
                     <option value="GG">GG</option>
-                    <option value="38">38</option>
-                    <option value="40">40</option>
+                    <option value="XG">XG</option>
                     <option value="Único">Único</option>
                   </select>
                 </div>
@@ -602,9 +653,9 @@ export default function Painel() {
                       }))
                     }
                   >
-                    <option value="Novo com etiqueta">Novo com etiqueta</option>
-                    <option value="Excelente estado">Excelente estado</option>
-                    <option value="Seminova">Seminova</option>
+                    <option value="Novo">Novo</option>
+                    <option value="Seminovo">Seminovo</option>
+                    <option value="Usado">Usado</option>
                   </select>
                 </div>
               </div>
@@ -630,12 +681,12 @@ export default function Painel() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
                 >
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-cyan-pill">
-                  Salvar e Publicar Peça
+                  {editingItemId ? 'Salvar Alterações' : 'Salvar e Publicar Peça'}
                 </button>
               </div>
             </form>
