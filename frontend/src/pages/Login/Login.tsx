@@ -23,7 +23,7 @@ export default function Login() {
       if (response.data.user.role === 'PROPRIETARIO') {
         navigate('/painel')
       } else {
-        navigate('/')
+        navigate('/cliente')
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Credenciais inválidas. Tente novamente.')

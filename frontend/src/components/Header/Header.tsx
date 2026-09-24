@@ -143,7 +143,7 @@ export default function Header() {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/'} style={{ color: 'var(--navy-dark)' }}>
+              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'} style={{ color: 'var(--navy-dark)' }}>
                 <User size={20} />
               </Link>
               <button 
@@ -161,9 +161,12 @@ export default function Header() {
             </Link>
           )}
 
-          <Link to="/cart" style={{ color: 'var(--navy-dark)' }}>
-            <ShoppingCart size={20} />
-          </Link>
+          {/* Carrinho: somente para clientes compradores */}
+          {(!user || user.role === 'CLIENTE') && (
+            <Link to="/cart" style={{ color: 'var(--navy-dark)' }}>
+              <ShoppingCart size={20} />
+            </Link>
+          )}
 
           {/* MOBILE TOGGLE */}
           <button
@@ -217,11 +220,11 @@ export default function Header() {
             {user ? (
               <>
                 <Link
-                  to={user.role === 'PROPRIETARIO' ? '/painel' : '/'}
+                  to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'}
                   className="btn btn-dark-pill w-full"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Meu Painel
+                  {user.role === 'PROPRIETARIO' ? 'Meu Painel' : 'Minha Conta'}
                 </Link>
                 <button
                   type="button"
