@@ -13,9 +13,7 @@ const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
 
 export default function Home() {
   const navigate = useNavigate()
-  const [selectedGender, setSelectedGender] = useState<'todos' | 'feminino' | 'masculino'>('todos')
-  
-  const [featuredPecas, setFeaturedPecas] = useState<(CardPecaProps & { genero: 'feminino' | 'masculino' })[]>([])
+  const [featuredPecas, setFeaturedPecas] = useState<CardPecaProps[]>([])
   const [exploreBrechos, setExploreBrechos] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[]>([])
 
   useEffect(() => {
@@ -34,7 +32,6 @@ export default function Home() {
           tamanho: `Tam. ${p.tamanho}`,
           categoria: p.categoria,
           statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-          genero: p.categoria.toLowerCase().includes('masculina') ? 'masculino' : 'feminino', // mockado, ideal ter no DB
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png',
         }))
         setFeaturedPecas(mappedPecas)
@@ -65,9 +62,7 @@ export default function Home() {
     navigate(`/brechos?q=${encodeURIComponent(tag)}`)
   }
 
-  const filteredPecas = featuredPecas.filter(
-    (p) => selectedGender === 'todos' || p.genero === selectedGender
-  ).slice(0, 4)
+  const filteredPecas = featuredPecas.slice(0, 4)
 
   const heroSection = (
     <section className="hero-section">

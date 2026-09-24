@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { MapPin, MessageCircle, Share2, Check } from 'lucide-react'
+import { api } from '../../services/api'
 
 type PecaInfo = {
   id: string
@@ -19,84 +20,48 @@ type PecaInfo = {
   brechoWhatsapp: string
 }
 
-const mockPecasData: Record<string, PecaInfo> = {
-  '101': {
-    id: '101',
-    nome: 'Camisa vintage',
-    preco: 'R$ 45,00',
-    tamanho: 'M',
-    condicao: 'Seminova',
-    categoria: 'Roupas / Camisas',
-    cor: 'Estampada Étnica Retro',
-    descricao:
-      'Camisa estampada vintage em ótimo estado de conservação, tecido leve e fluido com padronagem retrô exclusiva dos anos 90.',
-    imageUrl: '/images/vintage_shirt.png',
-    brechoId: '1',
-    brechoNome: 'Brechó da Maria',
-    brechoLocalizacao: 'Centro, Macapá - AP',
-    brechoRating: '4.8',
-    brechoWhatsapp: '5596999999999',
-  },
-  '1': {
-    id: '1',
-    nome: 'Jaqueta Jeans Bordada Vintage',
-    preco: 'R$ 89,90',
-    tamanho: 'M',
-    condicao: 'Excelente estado',
-    categoria: 'Casacos & Jaquetas',
-    cor: 'Jeans Azul Clássico',
-    descricao:
-      'Jaqueta jeans vintage estruturada com bordados florais artesanais no colarinho e nos bolsos. Peça única com excelente vestibilidade.',
-    imageUrl: '/images/denim_jacket.png',
-    brechoId: '1',
-    brechoNome: 'Brechó da Maria',
-    brechoLocalizacao: 'Centro, Macapá - AP',
-    brechoRating: '4.8',
-    brechoWhatsapp: '5596999999999',
-  },
-  '2': {
-    id: '2',
-    nome: 'Corta Vento Retro 90s',
-    preco: 'R$ 65,00',
-    tamanho: 'M',
-    condicao: 'Seminova',
-    categoria: 'Casacos & Jaquetas',
-    cor: 'Azul Pastel & Branco',
-    descricao:
-      'Jaqueta corta-vento original dos anos 90 com zíper frontal e detalhes em blocos de cor pastel.',
-    imageUrl: '/images/windbreaker_jacket.png',
-    brechoId: '1',
-    brechoNome: 'Brechó da Maria',
-    brechoLocalizacao: 'Centro, Macapá - AP',
-    brechoRating: '4.8',
-    brechoWhatsapp: '5596999999999',
-  },
-  '3': {
-    id: '3',
-    nome: 'Jaqueta Utility Verde Olive',
-    preco: 'R$ 120,00',
-    tamanho: 'G',
-    condicao: 'Excelente estado',
-    categoria: 'Casacos & Jaquetas',
-    cor: 'Verde Militar / Olive',
-    descricao:
-      'Jaqueta estilo militar utility em algodão encorpado com múltiplos bolsos frontais e ajuste na cintura.',
-    imageUrl: '/images/olive_jacket.png',
-    brechoId: '1',
-    brechoNome: 'Brechó da Maria',
-    brechoLocalizacao: 'Centro, Macapá - AP',
-    brechoRating: '4.8',
-    brechoWhatsapp: '5596999999999',
-  },
-}
-
-// Default fallback item
-const defaultPeca: PecaInfo = mockPecasData['101']
-
 export default function PecaDetalhes() {
   const { id } = useParams<{ id: string }>()
-  const peca = (id && mockPecasData[id]) || defaultPeca
+  const [peca, setPeca] = useState<PecaInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    async function loadPeca() {
+      if (!id) return
+      try {
+        const { data } = await api.get(`/pecas`)
+        // No futuro, adicionar endpoint GET /pecas/:id no backend
+        const item = data.find((p: any) => p.id === id)
+        if (item) {
+          setPeca({
+            id: item.id,
+            nome: item.nome,
+            preco: `R$ ${item.preco.toFixed(2).replace('.', ',')}`,
+            tamanho: item.tamanho,
+            condicao: item.condicao || 'Não informada',
+            categoria: item.categoria || 'Outros',
+            cor: item.cor || 'Não informada',
+            descricao: item.descricao || 'Sem descrição',
+            imageUrl: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '/images/vintage_shirt.png',
+            brechoId: item.brecho?.id || '',
+            brechoNome: item.brecho?.nome || 'Brechó',
+            brechoLocalizacao: item.brecho?.cidade ? `${item.brecho.cidade} - ${item.brecho.estado}` : 'Sem localização',
+            brechoRating: 'Novo',
+            brechoWhatsapp: item.brecho?.whatsapp || ''
+          })
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadPeca()
+  }, [id])
+
+  if (isLoading) return <div style={{ padding: '40px', textAlign: 'center' }}>Carregando peça...</div>
+  if (!peca) return <div style={{ padding: '40px', textAlign: 'center' }}>Peça não encontrada!</div>
 
   const handleContactClick = () => {
     const message = encodeURIComponent(
@@ -133,7 +98,6 @@ export default function PecaDetalhes() {
             alt={peca.nome}
             className="product-detail-img"
           />
-          <span className="product-detail-badge">DISPONÍVEL</span>
         </div>
 
         {/* RIGHT COLUMN: DETAILS */}

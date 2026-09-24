@@ -60,13 +60,15 @@ export default function CardPeca({
         <span className="featured-card__shop-badge">{brecho.toUpperCase()}</span>
 
         {/* STATUS BADGE OVERLAY TOP-RIGHT */}
-        <span
-          className={`featured-card__status-badge ${
-            statusTag.startsWith('-') ? 'is-discount' : ''
-          }`}
-        >
-          {statusTag}
-        </span>
+        {statusTag && statusTag !== 'DISPONÍVEL' && (
+          <span
+            className={`featured-card__status-badge ${
+              statusTag.startsWith('-') ? 'is-discount' : ''
+            }`}
+          >
+            {statusTag}
+          </span>
+        )}
 
         {/* PRODUCT IMAGE */}
         {imageUrl ? (
