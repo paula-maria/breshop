@@ -1,13 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart } from 'lucide-react'
+import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
-type HeaderProps = {
-  isLoggedIn?: boolean
-  userName?: string
-}
-
-export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
+export default function Header() {
+  const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brechoDropdownOpen, setBrechoDropdownOpen] = useState(false)
   const [favoritesCount, setFavoritesCount] = useState(0)
@@ -50,9 +47,11 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
     <header className="site-header">
       <div className="site-header__container">
         {/* LOGO */}
-        <Link to="/" className="site-header__logo" aria-label="Home BRESHOP">
-          <span className="site-header__logo-text">BRESHOP</span>
-        </Link>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <Link to="/" className="site-header__logo" aria-label="Home BRESHOP" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="site-header__logo-text" style={{ color: 'var(--cyan-primary)' }}>BRESHOP</span>
+          </Link>
+        </div>
 
         {/* CENTER NAVIGATION */}
         <nav className="site-header__nav" aria-label="Navegação principal">
@@ -63,120 +62,77 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             Início
           </Link>
 
-          {/* BRECHÓS DROPDOWN */}
-          <div
-            className="header-dropdown-wrapper"
-            ref={dropdownRef}
-            onMouseEnter={() => setBrechoDropdownOpen(true)}
-            onMouseLeave={() => setBrechoDropdownOpen(false)}
+          <Link
+            to="/brechos"
+            className={`site-header__link ${isActive('/brechos') ? 'is-active' : ''}`}
           >
+            Loja
+          </Link>
+
+          <Link
+            to="/brechos"
+            className="site-header__link"
+          >
+            Categorias
+          </Link>
+
+          <div className="header-dropdown-wrapper" ref={dropdownRef}>
             <button
               type="button"
-              className={`site-header__link dropdown-trigger-btn ${isActive('/brechos') ? 'is-active' : ''
-                }`}
-              onClick={() => setBrechoDropdownOpen((prev) => !prev)}
-              aria-expanded={brechoDropdownOpen}
+              className={`site-header__link dropdown-trigger-btn site-header__dropdown-toggle ${brechoDropdownOpen ? 'is-active' : ''}`}
+              onClick={() => setBrechoDropdownOpen(!brechoDropdownOpen)}
             >
-              Brechós
-              <ChevronDown
-                size={14}
-                style={{
-                  transform: brechoDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease',
-                }}
-              />
+              Brechós <ChevronDown size={14} />
             </button>
 
-            {/* DROPDOWN MENU */}
             {brechoDropdownOpen && (
               <div className="header-dropdown-menu">
                 <Link
-                  to="/brechos"
+                  to="/brechos?cat=todas"
                   className="dropdown-item"
                   onClick={() => setBrechoDropdownOpen(false)}
                 >
-                  <span className="dropdown-item__icon">
+                  <div className="dropdown-item__icon">
                     <Store size={18} />
-                  </span>
+                  </div>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Todas as Peças</span>
+                    <span className="dropdown-item__desc">Explorar catálogo</span>
+                  </div>
+                </Link>
+
+                <div className="dropdown-divider"></div>
+
+                <Link
+                  to="/brechos?view=lojas"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <div className="dropdown-item__icon">
+                    <MapPin size={18} />
+                  </div>
                   <div className="dropdown-item__content">
                     <span className="dropdown-item__title">Todos os Brechós</span>
-                    <span className="dropdown-item__desc">Explorar lista completa</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/brechos?cidade=Macapá"
-                  className="dropdown-item"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <MapPin size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Brechós em Macapá</span>
-                    <span className="dropdown-item__desc">Ver lojas na capital</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/brechos?cidade=Santana"
-                  className="dropdown-item"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <MapPin size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Brechós em Santana</span>
-                    <span className="dropdown-item__desc">Ver lojas na região</span>
-                  </div>
-                </Link>
-
-                <div className="dropdown-divider" />
-
-                <Link
-                  to="/cadastro"
-                  className="dropdown-item is-highlight"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <Sparkles size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Cadastrar meu Brechó</span>
-                    <span className="dropdown-item__desc">Divulgue seu catálogo</span>
+                    <span className="dropdown-item__desc">Ver lojas cadastradas</span>
                   </div>
                 </Link>
               </div>
             )}
           </div>
-
-          <Link
-            to="/brechos?cat=feminino"
-            className={`site-header__link ${location.search.includes('cat=feminino') ? 'is-active' : ''}`}
-          >
-            Feminino
-          </Link>
-
-          <Link
-            to="/brechos?cat=masculino"
-            className={`site-header__link ${location.search.includes('cat=masculino') ? 'is-active' : ''}`}
-          >
-            Masculino
-          </Link>
-
-          <Link
-            to="/brechos?cat=todas"
-            className={`site-header__link ${location.search.includes('cat=todas') ? 'is-active' : ''}`}
-          >
-            Todas as Peças
-          </Link>
-
         </nav>
 
         {/* RIGHT ACTIONS */}
-        <div className="site-header__actions">
-          <Link to="/favoritos" className="header-favorites-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)', marginRight: '16px' }} aria-label="Favoritos">
+        <div className="site-header__actions" style={{ flex: 1, justifyContent: 'flex-end' }}>
+          
+          {/* Header Search (Desktop) */}
+          <div className="header-search hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#f5f5f5', borderRadius: '4px', padding: '10px 16px', minWidth: '350px' }}>
+            <span style={{ color: '#8a8a8a', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
+              <Search size={16} />
+            </span>
+            <input type="text" placeholder="Buscar peças..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', width: '100%' }} />
+          </div>
+
+          <Link to="/favoritos" className="header-favorites-btn hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)' }} aria-label="Favoritos">
             <Heart size={20} />
             {favoritesCount > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
@@ -185,19 +141,31 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             )}
           </Link>
 
-          {isLoggedIn ? (
-            <Link to="/painel" className="btn btn-ghost btn-sm">
-              {userName ? `Olá, ${userName}` : 'Meu Painel'}
-            </Link>
+          {user ? (
+            <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'} style={{ color: 'var(--navy-dark)' }}>
+                <User size={20} />
+              </Link>
+              <button 
+                type="button" 
+                onClick={logout} 
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-danger)' }}
+                title="Sair"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
           ) : (
-            <>
-              <Link to="/login" className="site-header__login-link">
-                Entrar
-              </Link>
-              <Link to="/cadastro" className="btn btn-dark-pill">
-                Criar conta
-              </Link>
-            </>
+            <Link to="/login" className="hide-on-mobile" style={{ color: 'var(--navy-dark)' }}>
+              <User size={20} />
+            </Link>
+          )}
+
+          {/* Carrinho: somente para clientes compradores */}
+          {(!user || user.role === 'CLIENTE') && (
+            <Link to="/cart" style={{ color: 'var(--navy-dark)' }}>
+              <ShoppingCart size={20} />
+            </Link>
           )}
 
           {/* MOBILE TOGGLE */}
@@ -225,19 +193,11 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
           </Link>
 
           <Link
-            to="/brechos?cat=feminino"
+            to="/brechos"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Feminino (Peças)
-          </Link>
-
-          <Link
-            to="/brechos?cat=masculino"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Masculino (Peças)
+            Categorias
           </Link>
 
           <Link
@@ -257,44 +217,54 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
           </Link>
 
           <Link
-            to="/brechos?cidade=Macapá"
+            to="/favoritos"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)' }}
           >
-            Brechós em Macapá
-          </Link>
-
-          <Link
-            to="/brechos?cidade=Santana"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Brechós em Santana
-          </Link>
-
-          <Link
-            to="/cadastro"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Cadastrar Brechó
+            <Heart size={18} /> Meus Favoritos
           </Link>
 
           <div className="site-header__mobile-actions">
-            <Link
-              to="/login"
-              className="btn btn-ghost w-full"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Entrar
-            </Link>
-            <Link
-              to="/cadastro"
-              className="btn btn-dark-pill w-full"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Criar conta
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'}
+                  className="btn btn-dark-pill w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {user.role === 'PROPRIETARIO' ? 'Meu Painel' : 'Minha Conta'}
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-ghost w-full"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    logout()
+                  }}
+                  style={{ color: 'var(--color-danger)' }}
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="btn btn-ghost w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/cadastro"
+                  className="btn btn-dark-pill w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Criar conta
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       )}

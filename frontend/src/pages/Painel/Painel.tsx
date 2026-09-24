@@ -1,8 +1,17 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
+import { Store, MapPin, Clock, Plus, X, ExternalLink, Trash2 } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
+import { api } from '../../services/api'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+const maskCurrency = (value: string) => {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  const num = parseInt(digits, 10) / 100
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 type ItemDashboard = {
   id: string
@@ -15,98 +24,83 @@ type ItemDashboard = {
   imageUrl: string
 }
 
-const initialItems: ItemDashboard[] = [
-  {
-    id: '101',
-    nome: 'Camisa vintage',
-    preco: 'R$ 45,00',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Seminova',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/vintage_shirt.png',
-  },
-  {
-    id: '1',
-    nome: 'Jaqueta Jeans Bordada Vintage',
-    preco: 'R$ 89,90',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Excelente estado',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/denim_jacket.png',
-  },
-  {
-    id: '2',
-    nome: 'Corta Vento Retro 90s',
-    preco: 'R$ 65,00',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Seminova',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/windbreaker_jacket.png',
-  },
-  {
-    id: '3',
-    nome: 'Jaqueta Utility Verde Olive',
-    preco: 'R$ 120,00',
-    tamanho: 'G',
-    categoria: 'Roupas',
-    condicao: 'Excelente estado',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/olive_jacket.png',
-  },
-]
-
 type StoreInfo = {
   nome: string
-  localizacao: string
+  descricao?: string
+  logoUrl?: string
+  capaUrl?: string
+  telefone?: string
   whatsapp: string
-  instagram: string
-  horario: string
+  emailContato?: string
+  instagram?: string
+  site?: string
+  cep?: string
+  rua?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  horarios?: string
+  formasPagamento: string[]
+  atendimento?: string
+  entrega: boolean
+  retirada: boolean
+  negociacao: boolean
 }
 
 export default function Painel() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState<'pecas' | 'perfil'>('pecas')
-  const [items, setItems] = useState<ItemDashboard[]>(() => {
-    const saved = localStorage.getItem('breshop_dashboard_items')
-    return saved ? JSON.parse(saved) : initialItems
-  })
+  const [items, setItems] = useState<ItemDashboard[]>([])
+  const [storeData, setStoreData] = useState<StoreInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [storeData, setStoreData] = useState<StoreInfo>(() => {
-    const savedStore = localStorage.getItem('breshop_user_store')
-    if (savedStore) {
+  useEffect(() => {
+    async function loadStore() {
       try {
-        return {
-          nome: 'Brechó da Maria',
-          localizacao: 'Centro, Macapá - AP',
-          whatsapp: '(96) 99999-9999',
-          instagram: '@brechodamaria',
-          horario: 'Seg–Sáb · 09:00–18:00',
-          ...JSON.parse(savedStore),
+        const res = await api.get('/brechos/minha-loja')
+        const data = res.data
+        setStoreData({
+          ...data
+        })
+        
+        if (data.pecas) {
+          const mappedItems = data.pecas.map((p: any) => ({
+            id: p.id,
+            nome: p.nome,
+            preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+            tamanho: p.tamanho,
+            categoria: p.categoria,
+            condicao: p.condicao,
+            status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+            imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
+          }))
+          setItems(mappedItems)
         }
-      } catch (e) {
-        console.error('Error parsing stored store data', e)
+      } catch (err: any) {
+        console.error('Erro ao carregar loja', err)
+        if (err.response?.status === 404) {
+          navigate('/onboarding-brecho')
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
-    return {
-      nome: 'Brechó da Maria',
-      localizacao: 'Centro, Macapá - AP',
-      whatsapp: '(96) 99999-9999',
-      instagram: '@brechodamaria',
-      horario: 'Seg–Sáb · 09:00–18:00',
-    }
-  })
+    loadStore()
+  }, [navigate])
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState({
     nome: '',
     preco: '',
     tamanho: 'M',
     categoria: 'Roupas',
-    condicao: 'Seminova',
-    imageUrl: '/images/vintage_shirt.png',
+    condicao: 'Seminovo',
+    imageUrl: '',
     descricao: '',
   })
 
@@ -128,62 +122,160 @@ export default function Painel() {
     isOpen: false,
     itemId: null,
   })
-  useEffect(() => {
-    localStorage.setItem('breshop_dashboard_items', JSON.stringify(items))
-  }, [items])
 
-  const toggleStatus = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === 'DISPONÍVEL' ? 'VENDIDO' : 'DISPONÍVEL',
-            }
-          : item
+  const toggleStatus = async (id: string) => {
+    try {
+      const item = items.find(i => i.id === id)
+      if (!item) return
+      const newStatus = item.status === 'DISPONÍVEL' ? 'VENDIDO' : 'DISPONÍVEL'
+      const disponivel = newStatus === 'DISPONÍVEL'
+      
+      await api.put(`/pecas/${id}`, { disponivel })
+      
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id
+            ? { ...i, status: newStatus }
+            : i
+        )
       )
-    )
+      showToast(`Status alterado para ${newStatus}`, 'success')
+    } catch (err) {
+      showToast('Erro ao atualizar status', 'error')
+    }
   }
+
+  useEffect(() => {
+    if (location.state?.toastMessage) {
+      showToast(location.state.toastMessage, 'success')
+      // Limpa o estado e também preserva a aba atual se existir
+      const state = { ...location.state }
+      delete state.toastMessage
+      navigate(location.pathname, { replace: true, state })
+    }
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab)
+    }
+  }, [location.state, navigate, location.pathname])
 
   const handleDeleteClick = (id: string) => {
     setConfirmModal({ isOpen: true, itemId: id })
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (confirmModal.itemId) {
-      setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
-      showToast('Peça excluída do catálogo.', 'success')
+      try {
+        await api.delete(`/pecas/${confirmModal.itemId}`)
+        setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
+        showToast('Peça excluída do catálogo.', 'success')
+      } catch (err) {
+        showToast('Erro ao excluir peça.', 'error')
+      }
     }
     setConfirmModal({ isOpen: false, itemId: null })
   }
 
-  const handleCreateItemSubmit = (e: FormEvent) => {
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setIsUploading(true)
+    try {
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setNewItem(prev => ({ ...prev, imageUrl: res.data.url }))
+      showToast('Imagem carregada com sucesso!', 'success')
+    } catch (err) {
+      showToast('Erro ao enviar imagem', 'error')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleEditClick = (item: ItemDashboard) => {
+    setEditingItemId(item.id)
+    setNewItem({
+      nome: item.nome,
+      preco: item.preco.replace('R$ ', '').replace('R$', '').trim(),
+      tamanho: item.tamanho,
+      categoria: item.categoria,
+      condicao: item.condicao,
+      imageUrl: item.imageUrl,
+      descricao: '',
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingItemId(null)
+    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', condicao: 'Seminovo', imageUrl: '', descricao: '' })
+  }
+
+  const handleCreateItemSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!newItem.nome || !newItem.preco) return
 
-    const created: ItemDashboard = {
-      id: String(Date.now()),
-      nome: newItem.nome,
-      preco: newItem.preco.startsWith('R$') ? newItem.preco : `R$ ${newItem.preco}`,
-      tamanho: newItem.tamanho,
-      categoria: newItem.categoria,
-      condicao: newItem.condicao,
-      status: 'DISPONÍVEL',
-      imageUrl: newItem.imageUrl || '/images/vintage_shirt.png',
-    }
+    const numericPrice = parseFloat(newItem.preco.replace(/\./g, '').replace(',', '.').trim())
 
-    setItems((prev) => [created, ...prev])
-    setIsModalOpen(false)
-    showToast('Peça cadastrada com sucesso!', 'success')
-    setNewItem({
-      nome: '',
-      preco: '',
-      tamanho: 'M',
-      categoria: 'Roupas',
-      condicao: 'Seminova',
-      imageUrl: '/images/vintage_shirt.png',
-      descricao: '',
-    })
+    try {
+      if (editingItemId) {
+        // EDITAR peça existente
+        const res = await api.put(`/pecas/${editingItemId}`, {
+          nome: newItem.nome,
+          preco: isNaN(numericPrice) ? 0 : numericPrice,
+          tamanho: newItem.tamanho,
+          categoria: newItem.categoria,
+          condicao: newItem.condicao,
+          descricao: newItem.descricao,
+          fotos: newItem.imageUrl ? [newItem.imageUrl] : []
+        })
+        const p = res.data
+        setItems((prev) => prev.map((i) => i.id === editingItemId ? {
+          ...i,
+          nome: p.nome,
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: p.tamanho,
+          categoria: p.categoria,
+          condicao: p.condicao,
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : i.imageUrl
+        } : i))
+        showToast('Peça atualizada com sucesso!', 'success')
+      } else {
+        // CRIAR nova peça
+        const res = await api.post('/pecas', {
+          nome: newItem.nome,
+          preco: isNaN(numericPrice) ? 0 : numericPrice,
+          tamanho: newItem.tamanho,
+          categoria: newItem.categoria,
+          condicao: newItem.condicao,
+          descricao: newItem.descricao,
+          fotos: newItem.imageUrl ? [newItem.imageUrl] : []
+        })
+        const p = res.data
+        const created: ItemDashboard = {
+          id: p.id,
+          nome: p.nome,
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: p.tamanho,
+          categoria: p.categoria,
+          condicao: p.condicao,
+          status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
+        }
+        setItems((prev) => [created, ...prev])
+        showToast('Peça cadastrada com sucesso!', 'success')
+      }
+      handleCloseModal()
+    } catch (err) {
+      showToast(editingItemId ? 'Erro ao atualizar peça.' : 'Erro ao cadastrar peça.', 'error')
+    }
   }
 
   const filteredItems = items.filter((item) =>
@@ -191,6 +283,14 @@ export default function Painel() {
   )
 
   const activeCount = items.filter((i) => i.status === 'DISPONÍVEL').length
+
+  if (isLoading) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Carregando dados da loja...</div>
+  }
+
+  if (!storeData) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Erro ao carregar loja.</div>
+  }
 
   return (
     <div className="dashboard-page">
@@ -208,14 +308,14 @@ export default function Painel() {
               <h1 className="dashboard-store-name">{storeData.nome}</h1>
               <p className="dashboard-store-location">
                 <MapPin size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-                {storeData.localizacao} ·{' '}
+                {storeData.cidade ? `${storeData.cidade} - ${storeData.estado}` : 'Localização pendente'} ·{' '}
                 <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 4px' }} />
-                {storeData.horario}
+                {storeData.horarios || 'Horários não definidos'}
               </p>
             </div>
           </div>
 
-          <Link to="/brechos/1" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Link to={`/brechos/${storeData.id}`} className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             Ver minha loja pública <ExternalLink size={14} />
           </Link>
         </div>
@@ -314,6 +414,13 @@ export default function Painel() {
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"
+                      onClick={() => handleEditClick(item)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
                       onClick={() => toggleStatus(item.id)}
                     >
                       {item.status === 'DISPONÍVEL'
@@ -324,7 +431,9 @@ export default function Painel() {
                       type="button"
                       className="btn btn-ghost btn-sm text-danger"
                       onClick={() => handleDeleteClick(item.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
+                      <Trash2 size={16} />
                       Excluir
                     </button>
                   </div>
@@ -338,114 +447,123 @@ export default function Painel() {
       {/* TAB 2: DADOS DO BRECHÓ */}
       {activeTab === 'perfil' && (
         <div className="dashboard-section">
-          <div className="profile-edit-card">
-            <h2 className="section-title">Informações do Brechó</h2>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                localStorage.setItem('breshop_user_store', JSON.stringify(storeData))
-                showToast('Dados do brechó atualizados com sucesso!', 'success')
-              }}
-              className="auth-form"
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="section-title" style={{ margin: 0 }}>Informações do Brechó</h2>
+            <button 
+              className="btn btn-ghost" 
+              onClick={() => navigate('/onboarding-brecho')}
             >
-              <div className="form-group">
-                <label className="form-label">Nome do Brechó</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={storeData.nome}
-                  onChange={(e) =>
-                    setStoreData((prev) => ({ ...prev, nome: e.target.value }))
-                  }
-                />
+              Editar Dados
+            </button>
+          </div>
+
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            
+            {/* INFORMAÇÕES BÁSICAS */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>NOME DO BRECHÓ</strong>
+                <p style={{ marginTop: '6px', fontSize: '1.1rem', fontWeight: 600, color: '#0f172a' }}>{storeData.nome}</p>
               </div>
-
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label className="form-label">Localização</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.localizacao}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        localizacao: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">WhatsApp de Contato</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.whatsapp}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        whatsapp: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>WHATSAPP</strong>
+                <p style={{ marginTop: '6px', fontSize: '1.1rem', color: '#0f172a' }}>{storeData.whatsapp}</p>
               </div>
-
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label className="form-label">Instagram</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.instagram}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        instagram: e.target.value,
-                      }))
-                    }
-                  />
+              {storeData.descricao && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>DESCRIÇÃO</strong>
+                  <p style={{ marginTop: '6px', color: '#334155', lineHeight: '1.6' }}>{storeData.descricao}</p>
                 </div>
+              )}
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">Horário de Funcionamento</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={storeData.horario}
-                    onChange={(e) =>
-                      setStoreData((prev) => ({
-                        ...prev,
-                        horario: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* CONTATOS SECUNDÁRIOS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>E-MAIL CONTATO</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.emailContato || '-'}</p>
               </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>TELEFONE FIXO</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.telefone || '-'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>INSTAGRAM</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.instagram || '-'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>SITE OFICIAL</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.site || '-'}</p>
+              </div>
+            </div>
 
-              <button type="submit" className="btn btn-cyan-pill">
-                Salvar Alterações
-              </button>
-            </form>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* ENDEREÇO */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ENDEREÇO E LOCALIZAÇÃO</strong>
+                {storeData.rua ? (
+                  <>
+                    <p style={{ marginTop: '8px', fontSize: '1.1rem', color: '#0f172a' }}>
+                      {storeData.rua}, {storeData.numero} {storeData.complemento ? `(${storeData.complemento})` : ''} - {storeData.bairro}
+                    </p>
+                    <p style={{ marginTop: '4px', color: '#64748b' }}>
+                      {storeData.cidade} - {storeData.estado} | CEP: {storeData.cep}
+                    </p>
+                  </>
+                ) : (
+                  <p style={{ marginTop: '8px', color: '#94a3b8' }}>Nenhum endereço cadastrado</p>
+                )}
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* INFORMAÇÕES COMERCIAIS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>HORÁRIOS</strong>
+                <p style={{ marginTop: '6px', color: '#334155' }}>{storeData.horarios || 'Não informados'}</p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>FAZ ENTREGA?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.entrega ? 600 : 400, color: storeData.entrega ? '#10b981' : '#64748b' }}>
+                  {storeData.entrega ? 'Sim' : 'Não'}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>PERMITE RETIRADA?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.retirada ? 600 : 400, color: storeData.retirada ? '#10b981' : '#64748b' }}>
+                  {storeData.retirada ? 'Sim' : 'Não'}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ACEITA NEGOCIAÇÃO?</strong>
+                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.negociacao ? 600 : 400, color: storeData.negociacao ? '#10b981' : '#64748b' }}>
+                  {storeData.negociacao ? 'Sim' : 'Não'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MODAL: CADASTRAR NOVA PEÇA */}
+      {/* MODAL: CADASTRAR / EDITAR PEÇA */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-overlay" onClick={handleCloseModal}>
           <div
             className="modal-container"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <h3>Cadastrar Nova Peça</h3>
+              <h3>{editingItemId ? 'Editar Peça' : 'Cadastrar Nova Peça'}</h3>
               <button
                 type="button"
                 className="modal-close-btn"
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
               >
                 <X size={18} />
               </button>
@@ -457,7 +575,6 @@ export default function Painel() {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Ex: Vestido Floral Vintage"
                   required
                   value={newItem.nome}
                   onChange={(e) =>
@@ -469,16 +586,19 @@ export default function Painel() {
               <div className="form-row-2">
                 <div className="form-group">
                   <label className="form-label">Preço (R$) *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Ex: 45,00"
-                    required
-                    value={newItem.preco}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, preco: e.target.value }))
-                    }
-                  />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ position: 'absolute', left: '12px', color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>R$</span>
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ paddingLeft: '36px' }}
+                      required
+                      value={newItem.preco}
+                      onChange={(e) =>
+                        setNewItem((prev) => ({ ...prev, preco: maskCurrency(e.target.value) }))
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -493,12 +613,12 @@ export default function Painel() {
                       }))
                     }
                   >
+                    <option value="PP">PP</option>
                     <option value="P">P</option>
                     <option value="M">M</option>
                     <option value="G">G</option>
                     <option value="GG">GG</option>
-                    <option value="38">38</option>
-                    <option value="40">40</option>
+                    <option value="XG">XG</option>
                     <option value="Único">Único</option>
                   </select>
                 </div>
@@ -535,50 +655,40 @@ export default function Painel() {
                       }))
                     }
                   >
-                    <option value="Novo com etiqueta">Novo com etiqueta</option>
-                    <option value="Excelente estado">Excelente estado</option>
-                    <option value="Seminova">Seminova</option>
+                    <option value="Novo">Novo</option>
+                    <option value="Seminovo">Seminovo</option>
+                    <option value="Usado">Usado</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Imagem Demonstrativa</label>
-                <select
+                <label className="form-label">Foto da Peça</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
                   className="form-input"
-                  value={newItem.imageUrl}
-                  onChange={(e) =>
-                    setNewItem((prev) => ({
-                      ...prev,
-                      imageUrl: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="/images/vintage_shirt.png">
-                    Camisa Vintage (Exemplo)
-                  </option>
-                  <option value="/images/denim_jacket.png">
-                    Jaqueta Jeans (Exemplo)
-                  </option>
-                  <option value="/images/windbreaker_jacket.png">
-                    Corta Vento (Exemplo)
-                  </option>
-                  <option value="/images/olive_jacket.png">
-                    Jaqueta Olive (Exemplo)
-                  </option>
-                </select>
+                  style={{ padding: '8px' }}
+                />
+                {isUploading && <span style={{ fontSize: 12, color: '#64748b', marginTop: 4, display: 'block' }}>Enviando imagem...</span>}
+                {newItem.imageUrl && !isUploading && (
+                  <div style={{ marginTop: 8 }}>
+                    <img src={newItem.imageUrl} alt="Preview" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
+                  </div>
+                )}
               </div>
 
               <div className="modal-actions">
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
                 >
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-cyan-pill">
-                  Salvar e Publicar Peça
+                  {editingItemId ? 'Salvar Alterações' : 'Salvar e Publicar Peça'}
                 </button>
               </div>
             </form>

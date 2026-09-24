@@ -23,7 +23,7 @@ export default function Login() {
       if (response.data.user.role === 'PROPRIETARIO') {
         navigate('/painel')
       } else {
-        navigate('/')
+        navigate('/cliente')
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Credenciais inválidas. Tente novamente.')
@@ -58,7 +58,6 @@ export default function Login() {
               type="email"
               id="email"
               className="form-input"
-              placeholder="seu@email.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -78,7 +77,6 @@ export default function Login() {
               type="password"
               id="senha"
               className="form-input"
-              placeholder="••••••••"
               required
               value={senha}
               onChange={(e) => setSenha(e.target.value)}

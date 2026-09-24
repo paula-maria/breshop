@@ -1,149 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
-
-const allBrechosList: (CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan'; cidade: string })[] = [
-  {
-    id: '1',
-    nome: 'Brechó da Maria',
-    localizacao: 'Centro, Macapá - AP',
-    cidade: 'Macapá',
-    descricao: 'Peças femininas e masculinas com curadoria especial e preços acessíveis.',
-    tone: 'teal',
-  },
-  {
-    id: '2',
-    nome: 'Brechó Aurora',
-    localizacao: 'Centro, Macapá - AP',
-    cidade: 'Macapá',
-    descricao: 'Peças garimpadas com afeto e curadoria especial em Macapá.',
-    tone: 'cyan',
-  },
-  {
-    id: '3',
-    nome: 'Brechó Vintage',
-    localizacao: 'Trem, Macapá - AP',
-    cidade: 'Macapá',
-    descricao: 'O melhor do estilo retrô dos anos 80, 90 e 2000.',
-    tone: 'navy',
-  },
-  {
-    id: '4',
-    nome: 'Brechó X',
-    localizacao: 'Santana - AP',
-    cidade: 'Santana',
-    descricao: 'Roupas e acessórios únicos para renovar seu estilo sustentável.',
-    tone: 'teal',
-  },
-  {
-    id: '5',
-    nome: 'Closet Retrô Santana',
-    localizacao: 'Centro, Santana - AP',
-    cidade: 'Santana',
-    descricao: 'Moda circular selecionada a dedo no centro de Santana.',
-    tone: 'cyan',
-  },
-  {
-    id: '6',
-    nome: 'Relíquia Shop',
-    localizacao: 'Santa Rita, Macapá - AP',
-    cidade: 'Macapá',
-    descricao: 'Especializado em peças vintage raras e jaquetas dos anos 90.',
-    tone: 'navy',
-  },
-]
-
-const allPecasCatalog: (CardPecaProps & { genero: 'feminino' | 'masculino' })[] = [
-  {
-    id: 'f1',
-    nome: 'Jaqueta Jeans Bordada Vintage',
-    brecho: 'Brechó Aurora',
-    preco: 'R$ 89,90',
-    tamanho: 'Tam. M',
-    categoria: 'Jaquetas',
-    statusTag: 'DISPONÍVEL',
-    genero: 'feminino',
-    imageUrl: '/images/denim_jacket.png',
-  },
-  {
-    id: 'f2',
-    nome: 'Vestido Floral Estampado 90s',
-    brecho: 'Brechó da Maria',
-    preco: 'R$ 75,00',
-    tamanho: 'Tam. P',
-    categoria: 'Vestidos',
-    statusTag: 'DISPONÍVEL',
-    genero: 'feminino',
-    imageUrl: '/images/vintage_shirt.png',
-  },
-  {
-    id: 'f3',
-    nome: 'Corta Vento Retro Pastel',
-    brecho: 'Closet Retrô Santana',
-    preco: 'R$ 68,00',
-    tamanho: 'Tam. M',
-    categoria: 'Jaquetas',
-    statusTag: '-15%',
-    genero: 'feminino',
-    imageUrl: '/images/windbreaker_jacket.png',
-  },
-  {
-    id: 'f4',
-    nome: 'Blazer Alfaiataria Verde Olive',
-    brecho: 'Brechó Vintage',
-    preco: 'R$ 110,00',
-    tamanho: 'Tam. G',
-    categoria: 'Casacos',
-    statusTag: 'DISPONÍVEL',
-    genero: 'feminino',
-    imageUrl: '/images/olive_jacket.png',
-  },
-  {
-    id: 'm1',
-    nome: 'Corta Vento Retro 90s Streetwear',
-    brecho: 'Relíquia Shop',
-    preco: 'R$ 65,00',
-    tamanho: 'Tam. M',
-    categoria: 'Jaquetas',
-    statusTag: '-20%',
-    genero: 'masculino',
-    imageUrl: '/images/windbreaker_jacket.png',
-  },
-  {
-    id: 'm2',
-    nome: 'Jaqueta Utility Verde Olive',
-    brecho: 'Brechó X',
-    preco: 'R$ 120,00',
-    tamanho: 'Tam. G',
-    categoria: 'Jaquetas',
-    statusTag: 'DISPONÍVEL',
-    genero: 'masculino',
-    imageUrl: '/images/olive_jacket.png',
-  },
-  {
-    id: 'm3',
-    nome: 'Camisa Vintage Estampa Étnica',
-    brecho: 'Brechó da Maria',
-    preco: 'R$ 45,00',
-    tamanho: 'Tam. M',
-    categoria: 'Camisas',
-    statusTag: 'DISPONÍVEL',
-    genero: 'masculino',
-    imageUrl: '/images/vintage_shirt.png',
-  },
-  {
-    id: 'm4',
-    nome: 'Jaqueta Jeans Trucker Vintage',
-    brecho: 'Relíquia Shop',
-    preco: 'R$ 95,00',
-    tamanho: 'Tam. GG',
-    categoria: 'Jaquetas',
-    statusTag: 'DISPONÍVEL',
-    genero: 'masculino',
-    imageUrl: '/images/denim_jacket.png',
-  },
-]
+import { api } from '../../services/api'
 
 export default function Brechos() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -153,10 +12,57 @@ export default function Brechos() {
   const queryParam = searchParams.get('q') || ''
   const [searchQuery, setSearchQuery] = useState(queryParam)
 
+  const [allBrechosList, setAllBrechosList] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan'; cidade: string })[]>([])
+  const [allPecasCatalog, setAllPecasCatalog] = useState<(CardPecaProps & { genero?: string, categoria?: string })[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [brechosRes, pecasRes] = await Promise.all([
+          api.get('/brechos'),
+          api.get('/pecas')
+        ])
+
+        const tones: ('teal' | 'navy' | 'cyan')[] = ['teal', 'navy', 'cyan']
+
+        const mappedBrechos = brechosRes.data.map((b: any, index: number) => ({
+          id: b.id,
+          nome: b.nome,
+          localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
+          cidade: b.cidade || '',
+          descricao: b.descricao || 'Sem descrição',
+          tone: tones[index % tones.length]
+        }))
+
+        const mappedPecas = pecasRes.data.map((p: any) => ({
+          id: p.id,
+          nome: p.nome,
+          brecho: p.brecho.nome,
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: `Tam. ${p.tamanho}`,
+          categoria: p.categoria,
+          condicao: p.condicao,
+          statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+          genero: 'todas', // backend doesnt have genero explicitly yet, but we have categoria
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
+        }))
+
+        setAllBrechosList(mappedBrechos)
+        setAllPecasCatalog(mappedPecas)
+      } catch (err) {
+        console.error('Erro ao buscar dados', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
   // Determine active view tab: 'feminino' | 'masculino' | 'todas' | 'lojas'
   const activeTab = catParam || (viewParam === 'pecas' ? 'todas' : 'lojas')
 
-  const cities = ['Todas', 'Macapá', 'Santana']
+  const cities = ['Todas', 'Macapá', 'Santana', 'Laranjal do Jari']
 
   const handleTabChange = (tab: 'feminino' | 'masculino' | 'todas' | 'lojas') => {
     const newParams = new URLSearchParams(searchParams)
@@ -182,7 +88,7 @@ export default function Brechos() {
 
   // Filter brechós list
   const filteredBrechos = allBrechosList.filter((brecho) => {
-    const matchesCity = cityParam === 'Todas' || brecho.cidade === cityParam
+    const matchesCity = cityParam === 'Todas' || (brecho.cidade && brecho.cidade.toLowerCase() === cityParam.toLowerCase())
     const matchesSearch =
       brecho.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
       brecho.localizacao.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -191,16 +97,37 @@ export default function Brechos() {
     return matchesCity && matchesSearch
   })
 
+  // Leitura dos filtros avançados da URL
+  const searchCatParams = searchParams.get('categoria') ? searchParams.get('categoria')!.split(',') : []
+  const searchTipoParams = searchParams.get('tipo') ? searchParams.get('tipo')!.split(',') : []
+  const searchTamanhoParams = searchParams.get('tamanho') ? searchParams.get('tamanho')!.split(',') : []
+  const searchCondicaoParams = searchParams.get('condicao') ? searchParams.get('condicao')!.split(',') : []
+  const disponivelFilter = searchParams.get('disponivel') === 'true'
+
   // Filter peças catalog list
   const filteredPecas = allPecasCatalog.filter((peca) => {
-    const matchesGender =
-      activeTab === 'todas' || peca.genero === activeTab
+    // Para simplificar no MVP, ignoramos 'feminino' e 'masculino' estritos se o banco não tem gênero definido,
+    // a menos que queiramos forçar categorias a gêneros. No momento 'todas' inclui tudo.
     const matchesSearch =
       peca.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
       peca.brecho.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (peca.categoria && peca.categoria.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return matchesGender && matchesSearch
+    const matchesAvail = !disponivelFilter || peca.statusTag === 'DISPONÍVEL'
+    
+    // Filtros complexos (sidebar)
+    const matchesCat = searchCatParams.length === 0 || (peca.categoria && searchCatParams.includes(peca.categoria))
+    
+    // Como não existe 'tipo' no BD de forma estrita, buscamos se o tipo (Camisa, Saia, etc) faz parte do nome da peça
+    const matchesTipo = searchTipoParams.length === 0 || searchTipoParams.some(tipo => peca.nome.toLowerCase().includes(tipo.toLowerCase()))
+    
+    // Condição da peça (Novo, Seminovo, etc)
+    const matchesCondicao = searchCondicaoParams.length === 0 || (peca.condicao && searchCondicaoParams.includes(peca.condicao))
+    
+    // Tamanho (como adicionamos 'Tam. ' antes, comparamos exatamente para não confundir 'G' com 'GG')
+    const matchesTamanho = searchTamanhoParams.length === 0 || searchTamanhoParams.some(t => peca.tamanho === `Tam. ${t}`)
+
+    return matchesSearch && matchesAvail && matchesCat && matchesTipo && matchesCondicao && matchesTamanho
   })
 
   const getTitle = () => {
@@ -208,6 +135,10 @@ export default function Brechos() {
     if (activeTab === 'masculino') return 'Peças Masculinas'
     if (activeTab === 'todas') return 'Todas as Peças Garimpadas'
     return 'Brechós Cadastrados'
+  }
+
+  if (loading) {
+    return <div style={{ padding: 60, textAlign: 'center' }}>Carregando catálogo oficial...</div>
   }
 
   return (
@@ -277,16 +208,16 @@ export default function Brechos() {
         </div>
       ) : (
         <div className="empty-products-state">
-          <p>Nenhuma peça encontrada para o filtro selecionado.</p>
+          <p>Nenhuma peça encontrada para os filtros selecionados.</p>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => {
               setSearchQuery('')
-              handleTabChange('todas')
+              setSearchParams(new URLSearchParams())
             }}
           >
-            Ver todas as peças
+            Limpar todos os filtros
           </button>
         </div>
       )}

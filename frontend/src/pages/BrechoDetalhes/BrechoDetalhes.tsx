@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { Star, MapPin, Clock, Camera, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
+import { api } from '../../services/api'
 
 type BrechoInfo = {
   id: string
@@ -17,87 +18,85 @@ type BrechoInfo = {
   pecas: CardPecaProps[]
 }
 
-const mockBrechosData: Record<string, BrechoInfo> = {
-  '1': {
-    id: '1',
-    nome: 'Brechó da Maria',
-    rating: '4,8',
-    reviewsCount: 124,
-    localizacao: 'Centro, Macapá - AP',
-    horario: 'Seg–Sáb · 09:00–18:00',
-    bannerUrl: '/images/brecho_maria.png',
-    instagram: 'https://instagram.com',
-    whatsapp: '5596999999999',
-    addressMaps: 'https://maps.google.com',
-    pecas: [
-      {
-        id: '101',
-        nome: 'Camisa vintage',
-        brecho: 'Brechó da Maria',
-        preco: 'R$ 45,00',
-        tamanho: 'Tam. M',
-        categoria: 'Roupas',
-        condicao: 'Seminova',
-        statusTag: 'DISPONÍVEL',
-        imageUrl: '/images/vintage_shirt.png',
-      },
-      {
-        id: '1',
-        nome: 'Jaqueta Jeans Bordada Vintage',
-        brecho: 'Brechó da Maria',
-        preco: 'R$ 89,90',
-        tamanho: 'Tam. M',
-        categoria: 'Roupas',
-        condicao: 'Excelente estado',
-        statusTag: 'DISPONÍVEL',
-        imageUrl: '/images/denim_jacket.png',
-      },
-      {
-        id: '2',
-        nome: 'Corta Vento Retro 90s',
-        brecho: 'Brechó da Maria',
-        preco: 'R$ 65,00',
-        tamanho: 'Tam. M',
-        categoria: 'Roupas',
-        condicao: 'Seminova',
-        statusTag: '-20%',
-        imageUrl: '/images/windbreaker_jacket.png',
-      },
-      {
-        id: '3',
-        nome: 'Jaqueta Utility Verde Olive',
-        brecho: 'Brechó da Maria',
-        preco: 'R$ 120,00',
-        tamanho: 'Tam. G',
-        categoria: 'Roupas',
-        condicao: 'Excelente estado',
-        statusTag: 'DISPONÍVEL',
-        imageUrl: '/images/olive_jacket.png',
-      },
-    ],
-  },
-}
-
-// Fallback for default display if route ID is different
-const defaultBrecho: BrechoInfo = mockBrechosData['1']
-
 export default function BrechoDetalhes() {
   const { id } = useParams<{ id: string }>()
-  const brecho = (id && mockBrechosData[id]) || defaultBrecho
+  const [brecho, setBrecho] = useState<BrechoInfo | null>(null)
+  const [loading, setLoading] = useState(true)
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todas')
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    async function fetchBrecho() {
+      try {
+        const res = await api.get(`/brechos/${id}`)
+        const b = res.data
+        const mappedBrecho: BrechoInfo = {
+          id: b.id,
+          nome: b.nome,
+          rating: '5,0',
+          reviewsCount: 1,
+          localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
+          horario: b.horarios || 'Horários não informados',
+          bannerUrl: b.capaUrl || '/images/brecho_maria.png',
+          instagram: b.instagram || '',
+          whatsapp: b.whatsapp || '',
+          addressMaps: `https://maps.google.com/?q=${encodeURIComponent(`${b.rua || ''}, ${b.numero || ''}, ${b.cidade || ''}`)}`,
+          pecas: b.pecas ? b.pecas.map((p: any) => ({
+            id: p.id,
+            nome: p.nome,
+            brecho: b.nome,
+            preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+            tamanho: `Tam. ${p.tamanho}`,
+            categoria: p.categoria,
+            condicao: p.condicao,
+            statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+            imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
+          })) : []
+        }
+        setBrecho(mappedBrecho)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (id) fetchBrecho()
+  }, [id])
 
   const categories = ['Todas', 'Roupas', 'Calçados', 'Acessórios']
 
-  const filteredPecas =
-    activeCategoryFilter === 'Todas'
-      ? brecho.pecas
-      : brecho.pecas.filter((p) => p.categoria === activeCategoryFilter)
+  if (loading) return <div style={{ padding: 60, textAlign: 'center' }}>Carregando perfil oficial do brechó...</div>
+  if (!brecho) return <div style={{ padding: 60, textAlign: 'center' }}>Brechó não encontrado.</div>
+
+  // Leitura dos filtros da sidebar
+  const searchCatParams = searchParams.get('categoria') ? searchParams.get('categoria')!.split(',') : []
+  const searchTipoParams = searchParams.get('tipo') ? searchParams.get('tipo')!.split(',') : []
+  const searchTamanhoParams = searchParams.get('tamanho') ? searchParams.get('tamanho')!.split(',') : []
+  const searchCondicaoParams = searchParams.get('condicao') ? searchParams.get('condicao')!.split(',') : []
+  const disponivelFilter = searchParams.get('disponivel') === 'true'
+
+  const filteredPecas = brecho.pecas.filter((p) => {
+    const matchesLocalCat = activeCategoryFilter === 'Todas' || p.categoria === activeCategoryFilter
+    
+    // Filtros complexos (sidebar)
+    const matchesCat = searchCatParams.length === 0 || (p.categoria && searchCatParams.includes(p.categoria))
+    const matchesTipo = searchTipoParams.length === 0 || searchTipoParams.some(tipo => p.nome.toLowerCase().includes(tipo.toLowerCase()))
+    const matchesCondicao = searchCondicaoParams.length === 0 || (p.condicao && searchCondicaoParams.includes(p.condicao))
+    // O backend ou mapeamento retorna o tamanho puro ou já com Tam.? 
+    // Em BrechoDetalhes o backend retorna a p.tamanho diretamente (ex: M). A interface local mapeia depois.
+    // Vamos garantir que a comparação inclua tanto M quanto Tam. M.
+    const matchesTamanho = searchTamanhoParams.length === 0 || searchTamanhoParams.some(t => p.tamanho === t || p.tamanho === `Tam. ${t}`)
+    const matchesAvail = !disponivelFilter || (p as any).disponivel === true || (p as any).statusTag === 'DISPONÍVEL' || p.statusTag === 'DISPONÍVEL'
+    
+    return matchesLocalCat && matchesCat && matchesTipo && matchesCondicao && matchesTamanho && matchesAvail
+  })
 
   const handleWhatsappClick = () => {
+    const wppNumber = brecho.whatsapp.replace(/\D/g, '')
     const message = encodeURIComponent(
       `Olá! Encontrei o ${brecho.nome} no Breshop e gostaria de tirar algumas dúvidas.`
     )
-    window.open(`https://wa.me/${brecho.whatsapp}?text=${message}`, '_blank')
+    window.open(`https://wa.me/55${wppNumber}?text=${message}`, '_blank')
   }
 
   return (
@@ -143,15 +142,17 @@ export default function BrechoDetalhes() {
 
         {/* STORE SOCIAL & ACTION BUTTONS */}
         <div className="store-info-card__actions">
-          <a
-            href={brecho.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ghost store-action-btn"
-          >
-            <Camera size={18} />
-            Instagram
-          </a>
+          {brecho.instagram && (
+            <a
+              href={brecho.instagram.startsWith('http') ? brecho.instagram : `https://instagram.com/${brecho.instagram.replace('@', '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost store-action-btn"
+            >
+              <Camera size={18} />
+              Instagram
+            </a>
+          )}
 
           <button
             type="button"

@@ -1,11 +1,12 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface ProtectedRouteProps {
   requiredRole?: 'CLIENTE' | 'PROPRIETARIO'
+  children: React.ReactNode
 }
 
-const ProtectedRoute = ({ requiredRole }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ requiredRole, children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth()
 
   if (isLoading) {
@@ -23,7 +24,7 @@ const ProtectedRoute = ({ requiredRole }: ProtectedRouteProps) => {
   }
 
   // Caso tudo esteja correto, renderiza o componente filho
-  return <Outlet />
+  return <>{children}</>
 }
 
 export default ProtectedRoute
