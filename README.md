@@ -231,6 +231,9 @@ O backend depende de um banco de dados PostgreSQL, que está configurado para ro
 # Entre na pasta do backend
 cd backend
 
+#criar um .env a partir do .env.example
+cp .env.example .env
+
 # Suba o container do banco de dados em segundo plano
 docker compose up -d
 
