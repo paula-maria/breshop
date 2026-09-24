@@ -3,83 +3,57 @@ import { useNavigate, Link } from 'react-router-dom'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
+import PageLayout from '../../components/PageLayout/PageLayout'
+import { api } from '../../services/api'
+import { useEffect } from 'react'
 
-const featuredPecas: (CardPecaProps & { genero: 'feminino' | 'masculino' })[] = [
-  {
-    id: '1',
-    nome: 'Jaqueta Jeans Bordada Vintage',
-    brecho: 'Brechó Olinda',
-    preco: 'R$ 89,90',
-    tamanho: 'Tam. M',
-    categoria: 'Jaqueta',
-    statusTag: 'DISPONÍVEL',
-    genero: 'feminino',
-    imageUrl: '/images/denim_jacket.png',
-  },
-  {
-    id: '2',
-    nome: 'Corta Vento Retro 90s',
-    brecho: 'Relíquia Shop',
-    preco: 'R$ 65,00',
-    tamanho: 'Tam. M',
-    categoria: 'Jaqueta',
-    statusTag: '-20%',
-    genero: 'masculino',
-    imageUrl: '/images/windbreaker_jacket.png',
-  },
-  {
-    id: '3',
-    nome: 'Jaqueta Utility Verde Olive',
-    brecho: 'Curadoria SP',
-    preco: 'R$ 120,00',
-    tamanho: 'Tam. G',
-    categoria: 'Jaqueta',
-    statusTag: 'DISPONÍVEL',
-    genero: 'masculino',
-    imageUrl: '/images/olive_jacket.png',
-  },
-  {
-    id: '4',
-    nome: 'Vestido Floral Estampado Vintage',
-    brecho: 'Brechó Aurora',
-    preco: 'R$ 75,00',
-    tamanho: 'Tam. P',
-    categoria: 'Vestidos',
-    statusTag: 'DISPONÍVEL',
-    genero: 'feminino',
-    imageUrl: '/images/vintage_shirt.png',
-  },
-]
 
-const exploreBrechos: (CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[] = [
-  {
-    id: '1',
-    nome: 'Brechó Aurora',
-    localizacao: 'Macapá - AP',
-    descricao: 'Peças garimpadas com afeto e curadoria especial.',
-    tone: 'teal',
-  },
-  {
-    id: '2',
-    nome: 'Brechó Vintage',
-    localizacao: 'Macapá - AP',
-    descricao: 'O melhor do estilo retrô dos anos 80, 90 e 2000.',
-    tone: 'navy',
-  },
-  {
-    id: '3',
-    nome: 'Brechó X',
-    localizacao: 'Santana - AP',
-    descricao: 'Roupas e acessórios únicos para renovar seu estilo.',
-    tone: 'cyan',
-  },
-]
 
 const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
 
 export default function Home() {
   const navigate = useNavigate()
   const [selectedGender, setSelectedGender] = useState<'todos' | 'feminino' | 'masculino'>('todos')
+  
+  const [featuredPecas, setFeaturedPecas] = useState<(CardPecaProps & { genero: 'feminino' | 'masculino' })[]>([])
+  const [exploreBrechos, setExploreBrechos] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[]>([])
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [pecasRes, brechosRes] = await Promise.all([
+          api.get('/pecas'),
+          api.get('/brechos')
+        ])
+        
+        const mappedPecas = pecasRes.data.map((p: any) => ({
+          id: p.id,
+          nome: p.nome,
+          brecho: p.brecho?.nome || 'Brechó',
+          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          tamanho: `Tam. ${p.tamanho}`,
+          categoria: p.categoria,
+          statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+          genero: p.categoria.toLowerCase().includes('masculina') ? 'masculino' : 'feminino', // mockado, ideal ter no DB
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png',
+        }))
+        setFeaturedPecas(mappedPecas)
+
+        const tones: ('teal'|'navy'|'cyan')[] = ['teal', 'navy', 'cyan']
+        const mappedBrechos = brechosRes.data.slice(0, 3).map((b: any, index: number) => ({
+          id: b.id,
+          nome: b.nome,
+          localizacao: b.cidade ? `${b.cidade} - ${b.estado}` : 'Sem localização',
+          descricao: b.descricao || 'Peças garimpadas com afeto e curadoria especial.',
+          tone: tones[index % 3],
+        }))
+        setExploreBrechos(mappedBrechos)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    loadData()
+  }, [])
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -93,80 +67,61 @@ export default function Home() {
 
   const filteredPecas = featuredPecas.filter(
     (p) => selectedGender === 'todos' || p.genero === selectedGender
+  ).slice(0, 4)
+
+  const heroSection = (
+    <section className="hero-section">
+      <div className="hero-section__content">
+        
+        <div className="hero-section__text-col">
+          <h1 className="hero-section__title">
+            Descubra Estilo Único e  
+            <span className="hero-section__title-cyan"> Sustentável</span>
+          </h1>
+          <p className="hero-section__subtitle">
+            Roupas e acessórios garimpados com preços acessíveis.<br/>
+            Expresse sua identidade e ajude a reduzir o desperdício na moda.
+          </p>
+
+
+          <div className="hero-section__social-proof">
+            <div className="hero-section__avatars">
+              <div className="avatar"></div>
+              <div className="avatar" style={{ background: '#aaa' }}></div>
+              <div className="avatar" style={{ background: '#888' }}></div>
+            </div>
+            <span className="hero-section__proof-text">1200+ clientes satisfeitos</span>
+          </div>
+        </div>
+
+        <div className="hero-section__image-col">
+          <div className="hero-section__badge">
+            ATÉ<br />
+            <span style={{ fontSize: '1.4rem', color: 'var(--navy-dark)', letterSpacing: 0 }}>70% OFF</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
   )
 
   return (
-    <div className="home-content">
-      {/* HERO SECTION */}
-      <section className="hero-section">
-        <div className="hero-section__content">
-          <span className="hero-section__eyebrow">MODA CIRCULAR BRASILEIRA</span>
+    <PageLayout showSidebar={true} heroSection={heroSection}>
+      <div className="home-content">
 
-          <h1 className="hero-section__title">
-            Moda com história, <br />
-            <span className="hero-section__title-cyan">curadoria brasileira.</span>
-          </h1>
-
-          <p className="hero-section__subtitle">
-            Descubra peças únicas selecionadas por brechós de todo o Brasil.
-          </p>
-
-          <div className="hero-section__search">
-            <SearchBar onSearch={handleSearch} />
-          </div>
-
-          {/* TRENDING TAGS */}
-          <div className="hero-section__trending">
-            <span className="trending-label">Em alta:</span>
-            <div className="trending-pills">
-              {trendingTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  className="trending-pill"
-                  onClick={() => handleTagClick(tag)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PRODUCTS SECTION */}
-      <section className="catalog-products">
-        <div className="catalog-header">
+      {/* PRODUCTS SECTION (Peças em destaque) */}
+      <section className="catalog-products" style={{ padding: '2rem 1rem', maxWidth: '1240px', margin: '0 auto' }}>
+        <div className="catalog-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
           <div>
-            <span className="catalog-header__eyebrow">SELEÇÃO DA SEMANA</span>
             <h2 className="catalog-header__title">Peças em destaque</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Explore nossa coleção de moda sustentável e única</p>
           </div>
-
-          {/* HOME CATEGORY SWITCH */}
-          <div className="home-gender-switch">
-            <button
-              type="button"
-              className={`gender-switch-btn ${selectedGender === 'todos' ? 'is-active' : ''}`}
-              onClick={() => setSelectedGender('todos')}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              className={`gender-switch-btn ${selectedGender === 'feminino' ? 'is-active' : ''}`}
-              onClick={() => setSelectedGender('feminino')}
-            >
-              Feminino
-            </button>
-            <button
-              type="button"
-              className={`gender-switch-btn ${selectedGender === 'masculino' ? 'is-active' : ''}`}
-              onClick={() => setSelectedGender('masculino')}
-            >
-              Masculino
-            </button>
-          </div>
+          <Link to="/brechos" style={{ color: 'var(--cyan-primary)', fontWeight: 600, textDecoration: 'none' }}>
+            Ver todas as peças
+          </Link>
         </div>
+
+
 
         <div className="grid-3-cols">
           {filteredPecas.map((peca) => (
@@ -210,5 +165,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </PageLayout>
   )
 }

@@ -15,28 +15,7 @@ import FilterSidebar from './components/FilterSidebar/FilterSidebar'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 
-function PageLayout({
-  children,
-  showSidebar = true,
-}: {
-  children: React.ReactNode
-  showSidebar?: boolean
-}) {
-  return (
-    <div className="home-layout">
-      <Header />
-      <div className="app-main-layout-container">
-        {showSidebar && (
-          <aside className="app-sidebar-column">
-            <FilterSidebar />
-          </aside>
-        )}
-        <main className="home-main app-content-wrapper">{children}</main>
-      </div>
-      <Footer />
-    </div>
-  )
-}
+import PageLayout from './components/PageLayout/PageLayout'
 
 export default function App() {
   return (
@@ -45,11 +24,7 @@ export default function App() {
         <Routes>
         <Route
           path="/"
-          element={
-            <PageLayout showSidebar={true}>
-              <Home />
-            </PageLayout>
-          }
+          element={<Home />}
         />
         <Route
           path="/login"

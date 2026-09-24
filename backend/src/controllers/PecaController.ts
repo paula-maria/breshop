@@ -68,4 +68,68 @@ export class PecaController {
       res.status(500).json({ error: 'Erro ao listar peças' })
     }
   }
+
+  async update(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      if (!req.user || req.user.role !== 'PROPRIETARIO') {
+        res.status(403).json({ error: 'Acesso negado' })
+        return
+      }
+
+      const data = createPecaSchema.partial().parse(req.body)
+
+      const peca = await prisma.peca.findUnique({
+        where: { id },
+        include: { brecho: true }
+      })
+
+      if (!peca || peca.brecho.userId !== req.user.id) {
+        res.status(404).json({ error: 'Peça não encontrada' })
+        return
+      }
+      
+      // permitimos update de 'disponivel' também, que não está no schema principal
+      if (req.body.disponivel !== undefined) {
+        data.disponivel = req.body.disponivel
+      }
+
+      const updatedPeca = await prisma.peca.update({
+        where: { id },
+        data: data as any
+      })
+
+      res.status(200).json(updatedPeca)
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || 'Erro ao atualizar peça' })
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      if (!req.user || req.user.role !== 'PROPRIETARIO') {
+        res.status(403).json({ error: 'Acesso negado' })
+        return
+      }
+
+      const peca = await prisma.peca.findUnique({
+        where: { id },
+        include: { brecho: true }
+      })
+
+      if (!peca || peca.brecho.userId !== req.user.id) {
+        res.status(404).json({ error: 'Peça não encontrada' })
+        return
+      }
+
+      await prisma.peca.delete({
+        where: { id }
+      })
+
+      res.status(200).json({ success: true })
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao excluir peça' })
+    }
+  }
 }

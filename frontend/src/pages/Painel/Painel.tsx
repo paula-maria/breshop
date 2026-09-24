@@ -115,17 +115,26 @@ export default function Painel() {
     itemId: null,
   })
 
-  const toggleStatus = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === 'DISPONÍVEL' ? 'VENDIDO' : 'DISPONÍVEL',
-            }
-          : item
+  const toggleStatus = async (id: string) => {
+    try {
+      const item = items.find(i => i.id === id)
+      if (!item) return
+      const newStatus = item.status === 'DISPONÍVEL' ? 'VENDIDO' : 'DISPONÍVEL'
+      const disponivel = newStatus === 'DISPONÍVEL'
+      
+      await api.put(`/pecas/${id}`, { disponivel })
+      
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id
+            ? { ...i, status: newStatus }
+            : i
+        )
       )
-    )
+      showToast(`Status alterado para ${newStatus}`, 'success')
+    } catch (err) {
+      showToast('Erro ao atualizar status', 'error')
+    }
   }
 
   useEffect(() => {
@@ -142,12 +151,40 @@ export default function Painel() {
     setConfirmModal({ isOpen: true, itemId: id })
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (confirmModal.itemId) {
-      setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
-      showToast('Peça excluída do catálogo.', 'success')
+      try {
+        await api.delete(`/pecas/${confirmModal.itemId}`)
+        setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
+        showToast('Peça excluída do catálogo.', 'success')
+      } catch (err) {
+        showToast('Erro ao excluir peça.', 'error')
+      }
     }
     setConfirmModal({ isOpen: false, itemId: null })
+  }
+
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setIsUploading(true)
+    try {
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setNewItem(prev => ({ ...prev, imageUrl: res.data.url }))
+      showToast('Imagem carregada com sucesso!', 'success')
+    } catch (err) {
+      showToast('Erro ao enviar imagem', 'error')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleCreateItemSubmit = async (e: FormEvent) => {
@@ -233,7 +270,7 @@ export default function Painel() {
             </div>
           </div>
 
-          <Link to="/brechos/1" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Link to={`/brechos/${storeData.id}`} className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             Ver minha loja pública <ExternalLink size={14} />
           </Link>
         </div>
@@ -570,30 +607,20 @@ export default function Painel() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Imagem Demonstrativa</label>
-                <select
+                <label className="form-label">Foto da Peça</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
                   className="form-input"
-                  value={newItem.imageUrl}
-                  onChange={(e) =>
-                    setNewItem((prev) => ({
-                      ...prev,
-                      imageUrl: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="/images/vintage_shirt.png">
-                    Camisa Vintage (Exemplo)
-                  </option>
-                  <option value="/images/denim_jacket.png">
-                    Jaqueta Jeans (Exemplo)
-                  </option>
-                  <option value="/images/windbreaker_jacket.png">
-                    Corta Vento (Exemplo)
-                  </option>
-                  <option value="/images/olive_jacket.png">
-                    Jaqueta Olive (Exemplo)
-                  </option>
-                </select>
+                  style={{ padding: '8px' }}
+                />
+                {isUploading && <span style={{ fontSize: 12, color: '#64748b', marginTop: 4, display: 'block' }}>Enviando imagem...</span>}
+                {newItem.imageUrl && !isUploading && (
+                  <div style={{ marginTop: 8 }}>
+                    <img src={newItem.imageUrl} alt="Preview" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
+                  </div>
+                )}
               </div>
 
               <div className="modal-actions">

@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { routes } from './routes'
+import path from 'path'
 
 const app = express()
 
@@ -11,6 +12,9 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+
+// Serve static files from 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
 
 app.use('/api', routes)
 

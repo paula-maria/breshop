@@ -4,6 +4,7 @@ import { AuthController } from '../controllers/AuthController'
 import { authMiddleware } from '../middlewares/authMiddleware'
 import { BrechoController } from '../controllers/BrechoController'
 import { PecaController } from '../controllers/PecaController'
+import { uploadMiddleware } from '../middlewares/uploadMiddleware'
 
 const routes = Router()
 const healthController = new HealthController()
@@ -29,6 +30,18 @@ routes.get('/brechos/:id', brechoController.getById.bind(brechoController))
 
 // Rotas de Peças
 routes.post('/pecas', authMiddleware, pecaController.create.bind(pecaController))
+routes.put('/pecas/:id', authMiddleware, pecaController.update.bind(pecaController))
+routes.delete('/pecas/:id', authMiddleware, pecaController.delete.bind(pecaController))
 routes.get('/pecas', pecaController.list.bind(pecaController))
+
+// Rota genérica de Upload
+routes.post('/upload', authMiddleware, uploadMiddleware.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Nenhum arquivo enviado' })
+  }
+  // Retorna a URL pública
+  const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+  res.status(200).json({ url })
+})
 
 export { routes }

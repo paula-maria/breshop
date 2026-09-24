@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut } from 'lucide-react'
+import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function Header() {
@@ -47,9 +47,11 @@ export default function Header() {
     <header className="site-header">
       <div className="site-header__container">
         {/* LOGO */}
-        <Link to="/" className="site-header__logo" aria-label="Home BRESHOP">
-          <span className="site-header__logo-text">BRESHOP</span>
-        </Link>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <Link to="/" className="site-header__logo" aria-label="Home BRESHOP" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="site-header__logo-text" style={{ color: 'var(--cyan-primary)' }}>BRESHOP</span>
+          </Link>
+        </div>
 
         {/* CENTER NAVIGATION */}
         <nav className="site-header__nav" aria-label="Navegação principal">
@@ -60,120 +62,33 @@ export default function Header() {
             Início
           </Link>
 
-          {/* BRECHÓS DROPDOWN */}
-          <div
-            className="header-dropdown-wrapper"
-            ref={dropdownRef}
-            onMouseEnter={() => setBrechoDropdownOpen(true)}
-            onMouseLeave={() => setBrechoDropdownOpen(false)}
-          >
-            <button
-              type="button"
-              className={`site-header__link dropdown-trigger-btn ${isActive('/brechos') ? 'is-active' : ''
-                }`}
-              onClick={() => setBrechoDropdownOpen((prev) => !prev)}
-              aria-expanded={brechoDropdownOpen}
-            >
-              Brechós
-              <ChevronDown
-                size={14}
-                style={{
-                  transform: brechoDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease',
-                }}
-              />
-            </button>
-
-            {/* DROPDOWN MENU */}
-            {brechoDropdownOpen && (
-              <div className="header-dropdown-menu">
-                <Link
-                  to="/brechos"
-                  className="dropdown-item"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <Store size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Todos os Brechós</span>
-                    <span className="dropdown-item__desc">Explorar lista completa</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/brechos?cidade=Macapá"
-                  className="dropdown-item"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <MapPin size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Brechós em Macapá</span>
-                    <span className="dropdown-item__desc">Ver lojas na capital</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/brechos?cidade=Santana"
-                  className="dropdown-item"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <MapPin size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Brechós em Santana</span>
-                    <span className="dropdown-item__desc">Ver lojas na região</span>
-                  </div>
-                </Link>
-
-                <div className="dropdown-divider" />
-
-                <Link
-                  to="/cadastro"
-                  className="dropdown-item is-highlight"
-                  onClick={() => setBrechoDropdownOpen(false)}
-                >
-                  <span className="dropdown-item__icon">
-                    <Sparkles size={18} />
-                  </span>
-                  <div className="dropdown-item__content">
-                    <span className="dropdown-item__title">Cadastrar meu Brechó</span>
-                    <span className="dropdown-item__desc">Divulgue seu catálogo</span>
-                  </div>
-                </Link>
-              </div>
-            )}
-          </div>
-
           <Link
-            to="/brechos?cat=feminino"
-            className={`site-header__link ${location.search.includes('cat=feminino') ? 'is-active' : ''}`}
+            to="/brechos"
+            className={`site-header__link ${isActive('/brechos') ? 'is-active' : ''}`}
           >
-            Feminino
+            Loja
           </Link>
 
           <Link
-            to="/brechos?cat=masculino"
-            className={`site-header__link ${location.search.includes('cat=masculino') ? 'is-active' : ''}`}
+            to="/brechos"
+            className="site-header__link"
           >
-            Masculino
+            Categorias
           </Link>
-
-          <Link
-            to="/brechos?cat=todas"
-            className={`site-header__link ${location.search.includes('cat=todas') ? 'is-active' : ''}`}
-          >
-            Todas as Peças
-          </Link>
-
         </nav>
 
         {/* RIGHT ACTIONS */}
-        <div className="site-header__actions">
-          <Link to="/favoritos" className="header-favorites-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)', marginRight: '16px' }} aria-label="Favoritos">
+        <div className="site-header__actions" style={{ flex: 1, justifyContent: 'flex-end' }}>
+          
+          {/* Header Search (Desktop) */}
+          <div className="header-search" style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#f5f5f5', borderRadius: '4px', padding: '10px 16px', minWidth: '350px' }}>
+            <span style={{ color: '#8a8a8a', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
+              <Search size={16} />
+            </span>
+            <input type="text" placeholder="Buscar peças..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', width: '100%' }} />
+          </div>
+
+          <Link to="/favoritos" className="header-favorites-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)' }} aria-label="Favoritos">
             <Heart size={20} />
             {favoritesCount > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
@@ -184,29 +99,27 @@ export default function Header() {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/'} className="btn btn-ghost btn-sm">
-                Olá, {user.name ? user.name.split(' ')[0] : 'Usuário'}
+              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/'} style={{ color: 'var(--navy-dark)' }}>
+                <User size={20} />
               </Link>
               <button 
                 type="button" 
-                className="btn btn-ghost btn-sm" 
                 onClick={logout} 
-                style={{ padding: '0 8px', color: 'var(--color-danger)' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-danger)' }}
                 title="Sair"
               >
                 <LogOut size={18} />
               </button>
             </div>
           ) : (
-            <>
-              <Link to="/login" className="site-header__login-link">
-                Entrar
-              </Link>
-              <Link to="/cadastro" className="btn btn-dark-pill">
-                Criar conta
-              </Link>
-            </>
+            <Link to="/login" style={{ color: 'var(--navy-dark)' }}>
+              <User size={20} />
+            </Link>
           )}
+
+          <Link to="/cart" style={{ color: 'var(--navy-dark)' }}>
+            <ShoppingCart size={20} />
+          </Link>
 
           {/* MOBILE TOGGLE */}
           <button
