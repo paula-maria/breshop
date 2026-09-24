@@ -19,10 +19,10 @@ export default function Cadastro() {
     email: '',
     senha: '',
     nomeBrecho: '',
-    localizacao: 'Centro, Macapá - AP',
-    whatsapp: '(96) 99999-9999',
-    instagram: '@brechodamaria',
-    horario: 'Seg–Sáb · 09:00–18:00',
+    localizacao: '',
+    whatsapp: '',
+    instagram: '',
+    horario: '',
     descricao: '',
   })
 
@@ -174,7 +174,6 @@ export default function Cadastro() {
                     id="nomeResponsavel"
                     name="nomeResponsavel"
                     className="form-input"
-                    placeholder="Seu nome completo"
                     required
                     value={formData.nomeResponsavel}
                     onChange={handleChange}
@@ -190,7 +189,6 @@ export default function Cadastro() {
                     id="email"
                     name="email"
                     className="form-input"
-                    placeholder="seu@email.com"
                     required
                     value={formData.email}
                     onChange={handleChange}
@@ -206,7 +204,6 @@ export default function Cadastro() {
                     id="senha"
                     name="senha"
                     className="form-input"
-                    placeholder="••••••••"
                     required
                     value={formData.senha}
                     onChange={handleChange}
@@ -231,7 +228,6 @@ export default function Cadastro() {
                     id="nomeBrecho"
                     name="nomeBrecho"
                     className="form-input"
-                    placeholder="Ex: Brechó da Maria"
                     required
                     value={formData.nomeBrecho}
                     onChange={handleChange}
@@ -248,7 +244,6 @@ export default function Cadastro() {
                       id="localizacao"
                       name="localizacao"
                       className="form-input"
-                      placeholder="Ex: Centro, Macapá - AP"
                       required
                       value={formData.localizacao}
                       onChange={handleChange}
@@ -264,7 +259,6 @@ export default function Cadastro() {
                       id="whatsapp"
                       name="whatsapp"
                       className="form-input"
-                      placeholder="(96) 99999-9999"
                       required
                       value={formData.whatsapp}
                       onChange={handleChange}
@@ -282,7 +276,6 @@ export default function Cadastro() {
                       id="instagram"
                       name="instagram"
                       className="form-input"
-                      placeholder="@seu.brecho"
                       value={formData.instagram}
                       onChange={handleChange}
                     />
@@ -297,7 +290,6 @@ export default function Cadastro() {
                       id="horario"
                       name="horario"
                       className="form-input"
-                      placeholder="Ex: Seg–Sáb · 09:00–18:00"
                       value={formData.horario}
                       onChange={handleChange}
                     />
@@ -313,7 +305,6 @@ export default function Cadastro() {
                     name="descricao"
                     className="form-textarea"
                     rows={3}
-                    placeholder="Conte sobre o estilo do brechó, curadoria ou peças em destaque..."
                     value={formData.descricao}
                     onChange={handleChange}
                   />
