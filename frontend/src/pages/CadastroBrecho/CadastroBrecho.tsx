@@ -69,6 +69,10 @@ export default function CadastroBrecho() {
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [capaUploading, setCapaUploading] = useState(false)
+  const [logoPreview, setLogoPreview] = useState('')
+  const [capaPreview, setCapaPreview] = useState('')
 
   const [horariosObj, setHorariosObj] = useState({
     semana: { abre: '09:00', fecha: '18:00', fechado: false },
@@ -146,6 +150,8 @@ export default function CadastroBrecho() {
           if (sanitizedData.whatsapp) sanitizedData.whatsapp = maskPhone(sanitizedData.whatsapp)
           if (sanitizedData.telefone) sanitizedData.telefone = maskPhone(sanitizedData.telefone)
           if (sanitizedData.cep) sanitizedData.cep = maskCEP(sanitizedData.cep)
+          if (sanitizedData.logoUrl) setLogoPreview(sanitizedData.logoUrl)
+          if (sanitizedData.capaUrl) setCapaPreview(sanitizedData.capaUrl)
 
           reset(sanitizedData)
         }
@@ -171,6 +177,31 @@ export default function CadastroBrecho() {
           setValue('estado', data.uf, { shouldValidate: true })
         }
       } catch (err) {}
+    }
+  }
+
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'logoUrl' | 'capaUrl',
+    setUploading: (v: boolean) => void,
+    setPreview: (v: string) => void
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+    setUploading(true)
+    try {
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const url = res.data.url
+      setValue(field, url, { shouldValidate: true })
+      setPreview(url)
+    } catch {
+      setErrorMsg('Erro ao enviar imagem. Tente novamente.')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -244,13 +275,35 @@ export default function CadastroBrecho() {
             <textarea className="form-textarea" rows={3} {...register('descricao')} />
           </div>
           <div className="form-row-2">
+            {/* LOGO */}
             <div className="form-group">
-              <label className="form-label">URL da Logo</label>
-              <input type="text" className="form-input" {...register('logoUrl')} />
+              <label className="form-label">Logo do Brechó</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-input"
+                style={{ padding: '8px' }}
+                onChange={(e) => handleImageUpload(e, 'logoUrl', setLogoUploading, setLogoPreview)}
+              />
+              {logoUploading && <span style={{ fontSize: 12, color: '#64748b', marginTop: 4, display: 'block' }}>Enviando...</span>}
+              {logoPreview && !logoUploading && (
+                <img src={logoPreview} alt="Preview logo" style={{ marginTop: 8, width: 64, height: 64, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              )}
             </div>
+            {/* CAPA */}
             <div className="form-group">
-              <label className="form-label">URL da Capa</label>
-              <input type="text" className="form-input" {...register('capaUrl')} />
+              <label className="form-label">Foto de Capa</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-input"
+                style={{ padding: '8px' }}
+                onChange={(e) => handleImageUpload(e, 'capaUrl', setCapaUploading, setCapaPreview)}
+              />
+              {capaUploading && <span style={{ fontSize: 12, color: '#64748b', marginTop: 4, display: 'block' }}>Enviando...</span>}
+              {capaPreview && !capaUploading && (
+                <img src={capaPreview} alt="Preview capa" style={{ marginTop: 8, width: '100%', height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              )}
             </div>
           </div>
 
