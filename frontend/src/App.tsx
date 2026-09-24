@@ -6,6 +6,7 @@ import Brechos from './pages/Brechos/Brechos'
 import BrechoDetalhes from './pages/BrechoDetalhes/BrechoDetalhes'
 import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
+import CadastroBrecho from './pages/CadastroBrecho/CadastroBrecho'
 import Favoritos from './pages/Favoritos/Favoritos'
 import NotFound from './pages/NotFound/NotFound'
 import Header from './components/Header/Header'
@@ -96,6 +97,16 @@ export default function App() {
             <ProtectedRoute requiredRole="PROPRIETARIO">
               <PageLayout showSidebar={false}>
                 <Painel />
+              </PageLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboarding-brecho"
+          element={
+            <ProtectedRoute requiredRole="PROPRIETARIO">
+              <PageLayout showSidebar={false}>
+                <CadastroBrecho />
               </PageLayout>
             </ProtectedRoute>
           }

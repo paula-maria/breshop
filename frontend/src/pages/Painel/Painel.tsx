@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
+import { api } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 
 type ItemDashboard = {
   id: string
@@ -15,49 +17,6 @@ type ItemDashboard = {
   imageUrl: string
 }
 
-const initialItems: ItemDashboard[] = [
-  {
-    id: '101',
-    nome: 'Camisa vintage',
-    preco: 'R$ 45,00',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Seminova',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/vintage_shirt.png',
-  },
-  {
-    id: '1',
-    nome: 'Jaqueta Jeans Bordada Vintage',
-    preco: 'R$ 89,90',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Excelente estado',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/denim_jacket.png',
-  },
-  {
-    id: '2',
-    nome: 'Corta Vento Retro 90s',
-    preco: 'R$ 65,00',
-    tamanho: 'M',
-    categoria: 'Roupas',
-    condicao: 'Seminova',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/windbreaker_jacket.png',
-  },
-  {
-    id: '3',
-    nome: 'Jaqueta Utility Verde Olive',
-    preco: 'R$ 120,00',
-    tamanho: 'G',
-    categoria: 'Roupas',
-    condicao: 'Excelente estado',
-    status: 'DISPONÍVEL',
-    imageUrl: '/images/olive_jacket.png',
-  },
-]
-
 type StoreInfo = {
   nome: string
   localizacao: string
@@ -67,36 +26,49 @@ type StoreInfo = {
 }
 
 export default function Painel() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'pecas' | 'perfil'>('pecas')
-  const [items, setItems] = useState<ItemDashboard[]>(() => {
-    const saved = localStorage.getItem('breshop_dashboard_items')
-    return saved ? JSON.parse(saved) : initialItems
-  })
+  const [items, setItems] = useState<ItemDashboard[]>([])
+  const [storeData, setStoreData] = useState<StoreInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [storeData, setStoreData] = useState<StoreInfo>(() => {
-    const savedStore = localStorage.getItem('breshop_user_store')
-    if (savedStore) {
+  useEffect(() => {
+    async function loadStore() {
       try {
-        return {
-          nome: 'Brechó da Maria',
-          localizacao: 'Centro, Macapá - AP',
-          whatsapp: '(96) 99999-9999',
-          instagram: '@brechodamaria',
-          horario: 'Seg–Sáb · 09:00–18:00',
-          ...JSON.parse(savedStore),
+        const res = await api.get('/brechos/minha-loja')
+        const data = res.data
+        setStoreData({
+          nome: data.nome,
+          localizacao: data.localizacao,
+          whatsapp: data.whatsapp,
+          instagram: data.instagram || '',
+          horario: data.horario || '',
+        })
+        
+        if (data.pecas) {
+          const mappedItems = data.pecas.map((p: any) => ({
+            id: p.id,
+            nome: p.nome,
+            preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+            tamanho: p.tamanho,
+            categoria: p.categoria,
+            condicao: p.condicao,
+            status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+            imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+          }))
+          setItems(mappedItems)
         }
-      } catch (e) {
-        console.error('Error parsing stored store data', e)
+      } catch (err: any) {
+        console.error('Erro ao carregar loja', err)
+        if (err.response?.status === 404) {
+          navigate('/onboarding-brecho')
+        }
+      } finally {
+        setIsLoading(false)
       }
     }
-    return {
-      nome: 'Brechó da Maria',
-      localizacao: 'Centro, Macapá - AP',
-      whatsapp: '(96) 99999-9999',
-      instagram: '@brechodamaria',
-      horario: 'Seg–Sáb · 09:00–18:00',
-    }
-  })
+    loadStore()
+  }, [navigate])
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -128,9 +100,6 @@ export default function Painel() {
     isOpen: false,
     itemId: null,
   })
-  useEffect(() => {
-    localStorage.setItem('breshop_dashboard_items', JSON.stringify(items))
-  }, [items])
 
   const toggleStatus = (id: string) => {
     setItems((prev) =>
@@ -157,33 +126,50 @@ export default function Painel() {
     setConfirmModal({ isOpen: false, itemId: null })
   }
 
-  const handleCreateItemSubmit = (e: FormEvent) => {
+  const handleCreateItemSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!newItem.nome || !newItem.preco) return
 
-    const created: ItemDashboard = {
-      id: String(Date.now()),
-      nome: newItem.nome,
-      preco: newItem.preco.startsWith('R$') ? newItem.preco : `R$ ${newItem.preco}`,
-      tamanho: newItem.tamanho,
-      categoria: newItem.categoria,
-      condicao: newItem.condicao,
-      status: 'DISPONÍVEL',
-      imageUrl: newItem.imageUrl || '/images/vintage_shirt.png',
-    }
+    const numericPrice = parseFloat(newItem.preco.replace('R$', '').replace(',', '.').trim())
 
-    setItems((prev) => [created, ...prev])
-    setIsModalOpen(false)
-    showToast('Peça cadastrada com sucesso!', 'success')
-    setNewItem({
-      nome: '',
-      preco: '',
-      tamanho: 'M',
-      categoria: 'Roupas',
-      condicao: 'Seminova',
-      imageUrl: '/images/vintage_shirt.png',
-      descricao: '',
-    })
+    try {
+      const res = await api.post('/pecas', {
+        nome: newItem.nome,
+        preco: isNaN(numericPrice) ? 0 : numericPrice,
+        tamanho: newItem.tamanho,
+        categoria: newItem.categoria,
+        condicao: newItem.condicao,
+        descricao: newItem.descricao,
+        fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
+      })
+      
+      const p = res.data
+      const created: ItemDashboard = {
+        id: p.id,
+        nome: p.nome,
+        preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+        tamanho: p.tamanho,
+        categoria: p.categoria,
+        condicao: p.condicao,
+        status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+        imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+      }
+
+      setItems((prev) => [created, ...prev])
+      setIsModalOpen(false)
+      showToast('Peça cadastrada com sucesso!', 'success')
+      setNewItem({
+        nome: '',
+        preco: '',
+        tamanho: 'M',
+        categoria: 'Roupas',
+        condicao: 'Seminova',
+        imageUrl: '/images/vintage_shirt.png',
+        descricao: '',
+      })
+    } catch (err) {
+      showToast('Erro ao cadastrar peça.', 'error')
+    }
   }
 
   const filteredItems = items.filter((item) =>
@@ -191,6 +177,14 @@ export default function Painel() {
   )
 
   const activeCount = items.filter((i) => i.status === 'DISPONÍVEL').length
+
+  if (isLoading) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Carregando dados da loja...</div>
+  }
+
+  if (!storeData) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Erro ao carregar loja.</div>
+  }
 
   return (
     <div className="dashboard-page">

@@ -1,13 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart } from 'lucide-react'
+import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
-type HeaderProps = {
-  isLoggedIn?: boolean
-  userName?: string
-}
-
-export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
+export default function Header() {
+  const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brechoDropdownOpen, setBrechoDropdownOpen] = useState(false)
   const [favoritesCount, setFavoritesCount] = useState(0)
@@ -185,10 +182,21 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
             )}
           </Link>
 
-          {isLoggedIn ? (
-            <Link to="/painel" className="btn btn-ghost btn-sm">
-              {userName ? `Olá, ${userName}` : 'Meu Painel'}
-            </Link>
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/'} className="btn btn-ghost btn-sm">
+                Olá, {user.name.split(' ')[0]}
+              </Link>
+              <button 
+                type="button" 
+                className="btn btn-ghost btn-sm" 
+                onClick={logout} 
+                style={{ padding: '0 8px', color: 'var(--color-danger)' }}
+                title="Sair"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
           ) : (
             <>
               <Link to="/login" className="site-header__login-link">
@@ -281,20 +289,45 @@ export default function Header({ isLoggedIn = false, userName }: HeaderProps) {
           </Link>
 
           <div className="site-header__mobile-actions">
-            <Link
-              to="/login"
-              className="btn btn-ghost w-full"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Entrar
-            </Link>
-            <Link
-              to="/cadastro"
-              className="btn btn-dark-pill w-full"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Criar conta
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to={user.role === 'PROPRIETARIO' ? '/painel' : '/'}
+                  className="btn btn-dark-pill w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Meu Painel
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-ghost w-full"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    logout()
+                  }}
+                  style={{ color: 'var(--color-danger)' }}
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="btn btn-ghost w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/cadastro"
+                  className="btn btn-dark-pill w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Criar conta
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       )}
