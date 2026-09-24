@@ -1,13 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import PageLayout from '../../components/PageLayout/PageLayout'
 import { api } from '../../services/api'
-import { useEffect } from 'react'
-
-
 
 const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
 
@@ -15,6 +12,8 @@ export default function Home() {
   const navigate = useNavigate()
   const [featuredPecas, setFeaturedPecas] = useState<CardPecaProps[]>([])
   const [exploreBrechos, setExploreBrechos] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[]>([])
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -52,6 +51,24 @@ export default function Home() {
     loadData()
   }, [])
 
+  // Carrossel automático
+  const heroSlides = featuredPecas.slice(0, 5)
+  useEffect(() => {
+    if (heroSlides.length < 2) return
+    timerRef.current = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % heroSlides.length)
+    }, 3500)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [heroSlides.length])
+
+  const goToSlide = (index: number) => {
+    setCarouselIndex(index)
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % heroSlides.length)
+    }, 3500)
+  }
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
       navigate(`/brechos?q=${encodeURIComponent(query)}`)
@@ -63,6 +80,8 @@ export default function Home() {
   }
 
   const filteredPecas = featuredPecas.slice(0, 4)
+
+  const currentSlide = heroSlides[carouselIndex]
 
   const heroSection = (
     <section className="hero-section">
@@ -89,16 +108,48 @@ export default function Home() {
           </div>
         </div>
 
+        {/* CARROSSEL DE PEÇAS */}
         <div className="hero-section__image-col">
-          <div className="hero-section__badge">
-            ATÉ<br />
-            <span style={{ fontSize: '1.4rem', color: 'var(--navy-dark)', letterSpacing: 0 }}>70% OFF</span>
-          </div>
+          {heroSlides.length > 0 && currentSlide ? (
+            <Link to={`/pecas/${currentSlide.id}`} className="hero-carousel__slide">
+              <img
+                src={currentSlide.imageUrl}
+                alt={currentSlide.nome}
+                className="hero-carousel__img"
+              />
+              <div className="hero-carousel__info">
+                <span className="hero-carousel__brecho">{currentSlide.brecho}</span>
+                <span className="hero-carousel__nome">{currentSlide.nome}</span>
+                <span className="hero-carousel__preco">{currentSlide.preco}</span>
+              </div>
+            </Link>
+          ) : (
+            <div className="hero-carousel__empty">
+              <span>Peças em breve</span>
+            </div>
+          )}
+
+          {/* DOTS */}
+          {heroSlides.length > 1 && (
+            <div className="hero-carousel__dots">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`hero-carousel__dot ${i === carouselIndex ? 'is-active' : ''}`}
+                  onClick={() => goToSlide(i)}
+                  aria-label={`Ir para slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
         </div>
 
       </div>
     </section>
   )
+
 
   return (
     <PageLayout showSidebar={true} heroSection={heroSection}>

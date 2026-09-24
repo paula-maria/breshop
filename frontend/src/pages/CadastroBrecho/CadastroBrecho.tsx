@@ -175,6 +175,9 @@ export default function CadastroBrecho() {
   }
 
   const onSubmit = async (data: BrechoFormData) => {
+    // Limpar erro anterior
+    setErrorMsg('')
+
     // Compilar os horários
     const segSex = horariosObj.semana.fechado ? 'Seg a Sex: Fechado' : `Seg a Sex das ${horariosObj.semana.abre} às ${horariosObj.semana.fecha}`
     const sab = horariosObj.sabado.fechado ? 'Sáb: Fechado' : `Sáb das ${horariosObj.sabado.abre} às ${horariosObj.sabado.fecha}`
@@ -190,12 +193,21 @@ export default function CadastroBrecho() {
       cep: data.cep ? data.cep.replace(/\D/g, '') : data.cep,
     }
 
+    // Separar API do navigate: o catch só captura erros reais do backend
     try {
       await api.post('/brechos', payload)
-      navigate('/painel', { state: { toastMessage: isEditing ? 'Dados do brechó atualizados com sucesso!' : 'Brechó cadastrado com sucesso!', tab: 'perfil' } })
     } catch (err: any) {
       setErrorMsg(err.response?.data?.error || 'Erro ao salvar brechó')
+      return
     }
+
+    // Só navega se o POST foi bem-sucedido
+    navigate('/painel', {
+      state: {
+        toastMessage: isEditing ? 'Dados do brechó atualizados com sucesso!' : 'Brechó cadastrado com sucesso!',
+        tab: 'perfil'
+      }
+    })
   }
 
   return (
