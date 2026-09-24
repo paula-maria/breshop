@@ -125,14 +125,14 @@ export default function Header() {
         <div className="site-header__actions" style={{ flex: 1, justifyContent: 'flex-end' }}>
           
           {/* Header Search (Desktop) */}
-          <div className="header-search" style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#f5f5f5', borderRadius: '4px', padding: '10px 16px', minWidth: '350px' }}>
+          <div className="header-search hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#f5f5f5', borderRadius: '4px', padding: '10px 16px', minWidth: '350px' }}>
             <span style={{ color: '#8a8a8a', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
               <Search size={16} />
             </span>
             <input type="text" placeholder="Buscar peças..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', width: '100%' }} />
           </div>
 
-          <Link to="/favoritos" className="header-favorites-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)' }} aria-label="Favoritos">
+          <Link to="/favoritos" className="header-favorites-btn hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)' }} aria-label="Favoritos">
             <Heart size={20} />
             {favoritesCount > 0 && (
               <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
@@ -142,7 +142,7 @@ export default function Header() {
           </Link>
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'} style={{ color: 'var(--navy-dark)' }}>
                 <User size={20} />
               </Link>
@@ -156,7 +156,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <Link to="/login" style={{ color: 'var(--navy-dark)' }}>
+            <Link to="/login" className="hide-on-mobile" style={{ color: 'var(--navy-dark)' }}>
               <User size={20} />
             </Link>
           )}
@@ -214,6 +214,15 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(false)}
           >
             Todos os Brechós
+          </Link>
+
+          <Link
+            to="/favoritos"
+            className="site-header__mobile-link"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)' }}
+          >
+            <Heart size={18} /> Meus Favoritos
           </Link>
 
           <div className="site-header__mobile-actions">

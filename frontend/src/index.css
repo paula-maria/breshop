@@ -1692,6 +1692,7 @@ body {
 .dashboard-item-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: auto;
 }
@@ -2295,8 +2296,9 @@ body {
 @media (max-width: 768px) {
   .site-header__nav,
   .site-header__actions .site-header__login-link,
-  .site-header__actions .btn-dark-pill {
-    display: none;
+  .site-header__actions .btn-dark-pill,
+  .hide-on-mobile {
+    display: none !important;
   }
 
   .site-header__mobile-toggle {

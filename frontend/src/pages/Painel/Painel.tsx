@@ -1,6 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Store, MapPin, Clock, Plus, X, ExternalLink } from 'lucide-react'
+import { Store, MapPin, Clock, Plus, X, ExternalLink, Trash2 } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { api } from '../../services/api'
@@ -75,7 +75,7 @@ export default function Painel() {
             categoria: p.categoria,
             condicao: p.condicao,
             status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-            imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+            imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
           }))
           setItems(mappedItems)
         }
@@ -100,7 +100,7 @@ export default function Painel() {
     tamanho: 'M',
     categoria: 'Roupas',
     condicao: 'Seminovo',
-    imageUrl: '/images/vintage_shirt.png',
+    imageUrl: '',
     descricao: '',
   })
 
@@ -215,7 +215,7 @@ export default function Painel() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingItemId(null)
-    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', condicao: 'Seminovo', imageUrl: '/images/vintage_shirt.png', descricao: '' })
+    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', condicao: 'Seminovo', imageUrl: '', descricao: '' })
   }
 
   const handleCreateItemSubmit = async (e: FormEvent) => {
@@ -234,7 +234,7 @@ export default function Painel() {
           categoria: newItem.categoria,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
-          fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
+          fotos: newItem.imageUrl ? [newItem.imageUrl] : []
         })
         const p = res.data
         setItems((prev) => prev.map((i) => i.id === editingItemId ? {
@@ -256,7 +256,7 @@ export default function Painel() {
           categoria: newItem.categoria,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
-          fotos: [newItem.imageUrl || '/images/vintage_shirt.png']
+          fotos: newItem.imageUrl ? [newItem.imageUrl] : []
         })
         const p = res.data
         const created: ItemDashboard = {
@@ -267,7 +267,7 @@ export default function Painel() {
           categoria: p.categoria,
           condicao: p.condicao,
           status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
         }
         setItems((prev) => [created, ...prev])
         showToast('Peça cadastrada com sucesso!', 'success')
@@ -431,7 +431,9 @@ export default function Painel() {
                       type="button"
                       className="btn btn-ghost btn-sm text-danger"
                       onClick={() => handleDeleteClick(item.id)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
+                      <Trash2 size={16} />
                       Excluir
                     </button>
                   </div>

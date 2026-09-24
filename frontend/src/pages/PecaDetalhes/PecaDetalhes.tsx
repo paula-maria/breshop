@@ -43,7 +43,7 @@ export default function PecaDetalhes() {
             categoria: item.categoria || 'Outros',
             cor: item.cor || 'Não informada',
             descricao: item.descricao || 'Sem descrição',
-            imageUrl: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '/images/vintage_shirt.png',
+            imageUrl: item.fotos && item.fotos.length > 0 ? item.fotos[0] : '',
             brechoId: item.brecho?.id || '',
             brechoNome: item.brecho?.nome || 'Brechó',
             brechoLocalizacao: item.brecho?.cidade ? `${item.brecho.cidade} - ${item.brecho.estado}` : 'Sem localização',

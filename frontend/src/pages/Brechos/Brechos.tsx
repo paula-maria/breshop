@@ -45,7 +45,7 @@ export default function Brechos() {
           condicao: p.condicao,
           statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
           genero: 'todas', // backend doesnt have genero explicitly yet, but we have categoria
-          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png'
+          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
         }))
 
         setAllBrechosList(mappedBrechos)

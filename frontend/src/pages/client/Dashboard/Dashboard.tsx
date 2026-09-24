@@ -21,7 +21,7 @@ export default function ClientDashboard() {
         tamanho: `Tam. ${p.tamanho}`,
         categoria: p.categoria,
         statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-        imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '/images/vintage_shirt.png',
+        imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '',
       }))
       setRecentPecas(mapped)
     }).catch(() => {})
