@@ -20,4 +20,65 @@ model User {
   role      Role     @default(CLIENTE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  brecho    Brecho?
+}
+
+model Brecho {
+  id          String   @id @default(uuid())
+  // 01 - Informações Básicas
+  nome        String
+  descricao   String?
+  logoUrl     String?
+  capaUrl     String?
+
+  // 02 - Contatos
+  telefone    String?
+  whatsapp    String
+  emailContato String?
+  instagram   String?
+  site        String?
+
+  // 03 - Endereço
+  cep         String?
+  rua         String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  estado      String?
+
+  // 05 - Funcionamento
+  horarios    String?
+
+  // 06 - Comercial
+  formasPagamento String[]
+  atendimento     String?
+  entrega         Boolean  @default(false)
+  retirada        Boolean  @default(false)
+  negociacao      Boolean  @default(false)
+
+  // Relacionamentos
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  pecas       Peca[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Peca {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  preco       Float
+  tamanho     String
+  categoria   String
+  condicao    String
+  fotos       String[]
+  disponivel  Boolean  @default(true)
+  brechoId    String
+  brecho      Brecho   @relation(fields: [brechoId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
