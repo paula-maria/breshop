@@ -143,6 +143,10 @@ export default function CadastroBrecho() {
             } catch (e) {}
           }
           
+          if (sanitizedData.whatsapp) sanitizedData.whatsapp = maskPhone(sanitizedData.whatsapp)
+          if (sanitizedData.telefone) sanitizedData.telefone = maskPhone(sanitizedData.telefone)
+          if (sanitizedData.cep) sanitizedData.cep = maskCEP(sanitizedData.cep)
+
           reset(sanitizedData)
         }
       } catch (err: any) {

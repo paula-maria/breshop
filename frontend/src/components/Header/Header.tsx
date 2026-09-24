@@ -75,6 +75,50 @@ export default function Header() {
           >
             Categorias
           </Link>
+
+          <div className="header-dropdown-wrapper" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`site-header__link dropdown-trigger-btn site-header__dropdown-toggle ${brechoDropdownOpen ? 'is-active' : ''}`}
+              onClick={() => setBrechoDropdownOpen(!brechoDropdownOpen)}
+            >
+              Brechós <ChevronDown size={14} />
+            </button>
+
+            {brechoDropdownOpen && (
+              <div className="header-dropdown-menu">
+                <Link
+                  to="/brechos?cat=todas"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <div className="dropdown-item__icon">
+                    <Store size={18} />
+                  </div>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Todas as Peças</span>
+                    <span className="dropdown-item__desc">Explorar catálogo</span>
+                  </div>
+                </Link>
+
+                <div className="dropdown-divider"></div>
+
+                <Link
+                  to="/brechos?view=lojas"
+                  className="dropdown-item"
+                  onClick={() => setBrechoDropdownOpen(false)}
+                >
+                  <div className="dropdown-item__icon">
+                    <MapPin size={18} />
+                  </div>
+                  <div className="dropdown-item__content">
+                    <span className="dropdown-item__title">Todos os Brechós</span>
+                    <span className="dropdown-item__desc">Ver lojas cadastradas</span>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* RIGHT ACTIONS */}
@@ -146,19 +190,11 @@ export default function Header() {
           </Link>
 
           <Link
-            to="/brechos?cat=feminino"
+            to="/brechos"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            Feminino (Peças)
-          </Link>
-
-          <Link
-            to="/brechos?cat=masculino"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Masculino (Peças)
+            Categorias
           </Link>
 
           <Link
@@ -175,30 +211,6 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(false)}
           >
             Todos os Brechós
-          </Link>
-
-          <Link
-            to="/brechos?cidade=Macapá"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Brechós em Macapá
-          </Link>
-
-          <Link
-            to="/brechos?cidade=Santana"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Brechós em Santana
-          </Link>
-
-          <Link
-            to="/cadastro"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Cadastrar Brechó
           </Link>
 
           <div className="site-header__mobile-actions">

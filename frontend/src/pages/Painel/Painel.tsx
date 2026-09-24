@@ -140,12 +140,15 @@ export default function Painel() {
   useEffect(() => {
     if (location.state?.toastMessage) {
       showToast(location.state.toastMessage, 'success')
-      window.history.replaceState({}, document.title)
+      // Limpa o estado e também preserva a aba atual se existir
+      const state = { ...location.state }
+      delete state.toastMessage
+      navigate(location.pathname, { replace: true, state })
     }
     if (location.state?.tab) {
       setActiveTab(location.state.tab)
     }
-  }, [location.state])
+  }, [location.state, navigate, location.pathname])
 
   const handleDeleteClick = (id: string) => {
     setConfirmModal({ isOpen: true, itemId: id })
