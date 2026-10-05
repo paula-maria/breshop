@@ -290,6 +290,9 @@ Dentro do diretório `frontend`, você pode executar os seguintes comandos:
 
 Em desenvolvimento.
 
+### Últimas Atualizações:
+- **Banco de Dados (Prisma)**: Estruturas adicionadas para suportar **Chat e Mensagens, Propostas de Preço, Favoritos e Avaliações** de brechós.
+
 A documentação do projeto está organizada em:
 
 * `README.md` — contexto, problema, objetivo, tutorial de execução e visão geral do projeto;

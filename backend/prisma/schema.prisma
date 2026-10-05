@@ -22,6 +22,11 @@ model User {
   updatedAt DateTime @updatedAt
 
   brecho    Brecho?
+  chats     Chat[]
+  mensagens Mensagem[]
+  favoritos Favorito[]
+  avaliacoes Avaliacao[]
+  propostas Proposta[]
 }
 
 model Brecho {
@@ -62,6 +67,8 @@ model Brecho {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id])
   pecas       Peca[]
+  chats       Chat[]
+  avaliacoes  Avaliacao[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -81,4 +88,84 @@ model Peca {
   brecho      Brecho   @relation(fields: [brechoId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  chats       Chat[]
+  favoritos   Favorito[]
+  propostas   Proposta[]
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  pecaId    String?
+  peca      Peca?    @relation(fields: [pecaId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  brechoId  String
+  brecho    Brecho   @relation(fields: [brechoId], references: [id])
+  
+  mensagens Mensagem[]
+  propostas Proposta[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Mensagem {
+  id        String   @id @default(uuid())
+  content   String
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum StatusProposta {
+  PENDENTE
+  ACEITA
+  RECUSADA
+  CONTRAPROPOSTA
+}
+
+model Proposta {
+  id        String   @id @default(uuid())
+  valor     Float
+  status    StatusProposta @default(PENDENTE)
+  
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  
+  pecaId    String
+  peca      Peca     @relation(fields: [pecaId], references: [id])
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Favorito {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  pecaId    String
+  peca      Peca     @relation(fields: [pecaId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, pecaId])
+}
+
+model Avaliacao {
+  id        String   @id @default(uuid())
+  nota      Int      // 1 a 5
+  comentario String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  brechoId  String
+  brecho    Brecho   @relation(fields: [brechoId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, brechoId])
 }
