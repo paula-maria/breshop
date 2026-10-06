@@ -10,7 +10,9 @@ const app = express()
 const healthController = new HealthController()
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Frontend do Vite
+  origin: function (origin, callback) {
+    callback(null, true); // Permite qualquer origem
+  },
   credentials: true, // Permite envio de cookies
 }))
 app.use(express.json())

@@ -50,9 +50,9 @@ export default function Cadastro() {
 
       setTimeout(() => {
         if (accountType === 'brecho') {
-          navigate('/onboarding-brecho')
+          navigate('/painel')
         } else {
-          navigate('/')
+          navigate('/cliente')
         }
       }, 1500)
     } catch (err: any) {

@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../services/api'
 import { User } from 'lucide-react'
 
 export default function ClientProfile() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [name, setName] = useState(user?.name || '')
   const [email] = useState(user?.email || '')
@@ -17,7 +19,9 @@ export default function ClientProfile() {
     try {
       await api.put('/auth/me', { name, phone })
       setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      setTimeout(() => {
+        navigate('/cliente')
+      }, 1200)
     } catch {
       // silently ignore for now
     } finally {

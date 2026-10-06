@@ -66,6 +66,7 @@ const maskInstagram = (v: string) => {
 }
 
 export default function CadastroBrecho() {
+  const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
