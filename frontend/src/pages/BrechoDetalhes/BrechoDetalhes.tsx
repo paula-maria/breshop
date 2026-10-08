@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { Star, MapPin, Clock, Camera, MessageCircle, Map } from 'lucide-react'
+import { Star, MapPin, Clock, Camera, Truck, Store, Handshake, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import { api } from '../../services/api'
 import { whatsappUrl } from '../../utils/whatsapp'
@@ -13,7 +13,9 @@ type BrechoInfo = {
   reviewsCount: number
   localizacao: string
   horario: string
-  bannerUrl: string
+  entrega: boolean
+  retirada: boolean
+  negociacao: boolean
   instagram: string
   whatsapp: string
   addressMaps: string
@@ -43,7 +45,9 @@ export default function BrechoDetalhes() {
           reviewsCount: b.avaliacaoTotal ?? 0,
           localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
           horario: b.horarios || 'Horários não informados',
-          bannerUrl: b.capaUrl || '/images/brecho_maria.png',
+          entrega: !!b.entrega,
+          retirada: !!b.retirada,
+          negociacao: !!b.negociacao,
           instagram: b.instagram || '',
           whatsapp: b.whatsapp || '',
           addressMaps: `https://maps.google.com/?q=${encodeURIComponent(`${b.rua || ''}, ${b.numero || ''}, ${b.cidade || ''}`)}`,
@@ -130,16 +134,6 @@ export default function BrechoDetalhes() {
 
   return (
     <div className="store-detail-page">
-      {/* STORE COVER PHOTO BANNER */}
-      <div className="store-banner">
-        <img
-          src={brecho.bannerUrl}
-          alt={brecho.nome}
-          className="store-banner__img"
-        />
-        <div className="store-banner__overlay" />
-      </div>
-
       {/* STORE INFO HEADER */}
       <div className="store-info-card">
         <div className="store-info-card__header">
@@ -211,6 +205,14 @@ export default function BrechoDetalhes() {
             <span>{brecho.horario}</span>
           </div>
         </div>
+
+        {(brecho.entrega || brecho.retirada || brecho.negociacao) && (
+          <ul className="store-features">
+            {brecho.entrega && <li><Truck size={16} /> Faz entregas</li>}
+            {brecho.retirada && <li><Store size={16} /> Aceita retirada</li>}
+            {brecho.negociacao && <li><Handshake size={16} /> Aceita negociação</li>}
+          </ul>
+        )}
 
         {/* STORE SOCIAL & ACTION BUTTONS */}
         <div className="store-info-card__actions">
