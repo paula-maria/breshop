@@ -44,6 +44,8 @@ export default function Brechos() {
   // Filtros enviados ao backend; mudar qualquer um reinicia a listagem na página 1
   const categoria = searchParams.get('categoria') || ''
   const tipo = searchParams.get('tipo') || ''
+  const publico = searchParams.get('publico') || ''
+  const sort = searchParams.get('sort') || ''
   const tamanho = searchParams.get('tamanho') || ''
   const condicao = searchParams.get('condicao') || ''
   const disponivel = searchParams.get('disponivel') === 'true'
@@ -74,6 +76,8 @@ export default function Brechos() {
         ...base,
         categoria: categoria || undefined,
         tipo: tipo || undefined,
+        publico: publico || undefined,
+        sort: sort || undefined,
         tamanho: tamanho || undefined,
         condicao: condicao || undefined,
         disponivel: disponivel || undefined,
@@ -96,7 +100,7 @@ export default function Brechos() {
       imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
     }))
     return { items: mapped, totalPages: res.data.meta.totalPages, isBrecho: false as const }
-  }, [activeTab, cityParam, debouncedQuery, categoria, tipo, tamanho, condicao, disponivel, minPreco, maxPreco, localizacao, brechoFiltro])
+  }, [activeTab, cityParam, debouncedQuery, categoria, tipo, publico, sort, tamanho, condicao, disponivel, minPreco, maxPreco, localizacao, brechoFiltro])
 
   useEffect(() => {
     let cancelled = false

@@ -25,4 +25,4 @@ COPY --from=backend /app ./
 COPY --from=frontend /frontend/dist ./public
 RUN mkdir -p uploads
 EXPOSE 3333
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && if [ \"$SEED_ON_START\" = \"true\" ]; then npx prisma db seed; fi && node dist/server.js"]

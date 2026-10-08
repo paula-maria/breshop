@@ -74,7 +74,7 @@ export default function Header() {
           </Link>
 
           <Link
-            to="/brechos"
+            to="/categorias"
             className="site-header__link"
           >
             Categorias
@@ -202,7 +202,7 @@ export default function Header() {
           </Link>
 
           <Link
-            to="/brechos"
+            to="/categorias"
             className="site-header__mobile-link"
             onClick={() => setMobileMenuOpen(false)}
           >

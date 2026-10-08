@@ -82,6 +82,7 @@ model Peca {
   tamanho     String
   categoria   String
   tipo        String?
+  publico     String?
   condicao    String
   fotos       String[]
   disponivel  Boolean  @default(true)

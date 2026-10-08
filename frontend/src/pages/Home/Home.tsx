@@ -164,7 +164,7 @@ export default function Home() {
             <h2 className="catalog-header__title">Peças em destaque</h2>
             <p style={{ color: 'var(--text-muted)' }}>Explore nossa coleção de moda sustentável e única</p>
           </div>
-          <Link to="/brechos" style={{ color: 'var(--cyan-primary)', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/categorias" style={{ color: 'var(--cyan-primary)', fontWeight: 600, textDecoration: 'none' }}>
             Ver todas as peças
           </Link>
         </div>

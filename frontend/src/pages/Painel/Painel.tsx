@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Store, MapPin, Clock, Plus, X, ExternalLink, Trash2 } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
-import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS_POR_CATEGORIA, type Categoria } from '../../constants/pecas'
+import { CATEGORIAS, CONDICOES, PUBLICOS, TAMANHOS, TIPOS_POR_CATEGORIA, type Categoria } from '../../constants/pecas'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { api } from '../../services/api'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -21,6 +21,7 @@ type ItemDashboard = {
   tamanho: string
   categoria: string
   tipo: string
+  publico: string
   condicao: string
   descricao: string
   status: 'DISPONÍVEL' | 'VENDIDO'
@@ -77,6 +78,7 @@ export default function Painel() {
             tamanho: p.tamanho,
             categoria: p.categoria,
             tipo: p.tipo || '',
+            publico: p.publico || 'Unissex',
             condicao: p.condicao,
             descricao: p.descricao || '',
             status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
@@ -105,6 +107,7 @@ export default function Painel() {
     tamanho: 'M',
     categoria: 'Roupas' as string,
     tipo: 'Camiseta',
+    publico: 'Unissex',
     condicao: 'Seminovo',
     imageUrl: '',
     descricao: '',
@@ -212,6 +215,7 @@ export default function Painel() {
       tamanho: item.tamanho,
       categoria: item.categoria,
       tipo: item.tipo,
+      publico: item.publico,
       condicao: item.condicao,
       imageUrl: item.imageUrl,
       descricao: item.descricao,
@@ -222,7 +226,7 @@ export default function Painel() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingItemId(null)
-    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', tipo: 'Camiseta', condicao: 'Seminovo', imageUrl: '', descricao: '' })
+    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', tipo: 'Camiseta', publico: 'Unissex', condicao: 'Seminovo', imageUrl: '', descricao: '' })
   }
 
   const handleCreateItemSubmit = async (e: FormEvent) => {
@@ -240,6 +244,7 @@ export default function Painel() {
           tamanho: newItem.tamanho,
           categoria: newItem.categoria,
           tipo: newItem.tipo,
+          publico: newItem.publico,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
           fotos: newItem.imageUrl ? [newItem.imageUrl] : []
@@ -252,6 +257,7 @@ export default function Painel() {
           tamanho: p.tamanho,
           categoria: p.categoria,
           tipo: p.tipo || '',
+          publico: p.publico || 'Unissex',
           condicao: p.condicao,
           descricao: p.descricao || '',
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : i.imageUrl
@@ -265,6 +271,7 @@ export default function Painel() {
           tamanho: newItem.tamanho,
           categoria: newItem.categoria,
           tipo: newItem.tipo,
+          publico: newItem.publico,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
           fotos: newItem.imageUrl ? [newItem.imageUrl] : []
@@ -277,6 +284,7 @@ export default function Painel() {
           tamanho: p.tamanho,
           categoria: p.categoria,
           tipo: p.tipo || '',
+          publico: p.publico || 'Unissex',
           condicao: p.condicao,
           descricao: p.descricao || '',
           status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
@@ -671,6 +679,19 @@ export default function Painel() {
               </div>
 
               <div className="form-row-2">
+                <div className="form-group">
+                  <label className="form-label">Público *</label>
+                  <select
+                    className="form-input"
+                    value={newItem.publico}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, publico: e.target.value }))}
+                  >
+                    {PUBLICOS.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Condição *</label>
                   <select

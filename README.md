@@ -219,6 +219,12 @@ Isso constrói uma única imagem (`Dockerfile` da raiz) contendo o frontend comp
 - Para parar: `docker compose down` (adicione `-v` para apagar também os dados do banco)
 - Antes de usar em produção, altere o `JWT_SECRET` no `docker-compose.yml`.
 
+#### Dados de teste (seeder)
+
+Com `SEED_ON_START: "true"` (padrão no `docker-compose.yml`), toda subida do container popula o banco com 10 brechós, 51 peças, avaliações, favoritos e uma conversa com proposta. O seed é idempotente: não duplica dados já existentes. Para rodar manualmente: `npm run seed` (em `backend/`) ou `docker compose exec app npx prisma db seed`. Remova a variável em produção.
+
+Logins de teste (senha `123456`): `cliente@teste.com` (também `cliente2@` e `cliente3@`) e `dono1@teste.com` até `dono10@teste.com`.
+
 > O mesmo `docker-compose.yml` serve para o desenvolvimento manual (Opção B): `docker compose up -d db` sobe só o banco, acessível em `localhost:5432`.
 
 ### Opção B: Manual (desenvolvimento)

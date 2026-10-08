@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { prisma } from '../config/prisma'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
-import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS_POR_CATEGORIA } from '../constants/pecas'
+import { CATEGORIAS, CONDICOES, PUBLICOS, TAMANHOS, TIPOS_POR_CATEGORIA } from '../constants/pecas'
 import { paginated, parsePagination, queryList, queryString } from '../utils/query'
 
 const baseSchema = z.object({
@@ -12,6 +12,7 @@ const baseSchema = z.object({
   tamanho: z.enum(TAMANHOS),
   categoria: z.enum(CATEGORIAS),
   tipo: z.string().min(1),
+  publico: z.enum(PUBLICOS).optional(),
   condicao: z.enum(CONDICOES),
   fotos: z.array(z.string()).default([]),
 })
@@ -47,6 +48,7 @@ export class PecaController {
       const peca = await prisma.peca.create({
         data: {
           ...data,
+          publico: data.publico ?? 'Unissex',
           brechoId: brecho.id
         }
       })
@@ -64,12 +66,15 @@ export class PecaController {
       const tamanhos = queryList(req.query.tamanho)
       const condicoes = queryList(req.query.condicao)
       const tipos = queryList(req.query.tipo)
+      const publicos = queryList(req.query.publico)
+      const sort = queryString(req.query.sort)
       const q = queryString(req.query.q)
 
       const and: Prisma.PecaWhereInput[] = []
       if (categorias.length) {
         and.push({ OR: categorias.map((c) => ({ categoria: { equals: c, mode: 'insensitive' as const } })) })
       }
+      if (publicos.length) and.push({ publico: { in: publicos } })
       if (tamanhos.length) and.push({ tamanho: { in: tamanhos } })
       if (condicoes.length) and.push({ condicao: { in: condicoes } })
       if (tipos.length) {
@@ -105,7 +110,11 @@ export class PecaController {
         prisma.peca.findMany({
           where,
           include: { brecho: { select: { nome: true, cidade: true, estado: true } } },
-          orderBy: { createdAt: 'desc' },
+          orderBy: sort === 'menor-preco'
+            ? [{ preco: 'asc' }, { createdAt: 'desc' }]
+            : sort === 'mais-procuradas'
+              ? [{ favoritos: { _count: 'desc' } }, { createdAt: 'desc' }]
+              : { createdAt: 'desc' },
           skip,
           take: limit,
         }),

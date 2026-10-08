@@ -3,6 +3,7 @@
 export const CATEGORIAS = ['Roupas', 'Calçados', 'Acessórios'] as const
 export const TAMANHOS = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'] as const
 export const CONDICOES = ['Novo', 'Seminovo', 'Usado'] as const
+export const PUBLICOS = ['Feminino', 'Masculino', 'Infantil', 'Unissex'] as const
 
 export const TIPOS_POR_CATEGORIA: Record<(typeof CATEGORIAS)[number], readonly string[]> = {
   Roupas: ['Camiseta', 'Camisa', 'Calça', 'Vestido', 'Saia', 'Jaqueta', 'Outros'],

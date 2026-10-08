@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import './FilterSidebarDrawer.css'
 import { ChevronLeft, RotateCcw, Filter, X } from 'lucide-react'
 import { api } from '../../services/api'
-import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS } from '../../constants/pecas'
+import { CATEGORIAS, CONDICOES, PUBLICOS, TAMANHOS, TIPOS } from '../../constants/pecas'
 
 export default function FilterSidebar() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -53,6 +53,7 @@ export default function FilterSidebar() {
   // Active params
   const activeCategorias = getArrayParam('categoria')
   const activeTipos = getArrayParam('tipo')
+  const activePublicos = getArrayParam('publico')
   const activeTamanhos = getArrayParam('tamanho')
   const activeCondicoes = getArrayParam('condicao')
   
@@ -142,6 +143,24 @@ export default function FilterSidebar() {
                     />
                     <span className="filter-checkbox__custom" />
                     <span className="filter-checkbox__text">{cat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* PÚBLICO */}
+            <div className="filter-group">
+              <h4 className="filter-group__label">PÚBLICO</h4>
+              <div className="filter-group__list">
+                {PUBLICOS.map((pub) => (
+                  <label key={pub} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={activePublicos.includes(pub)}
+                      onChange={() => toggleArrayParam('publico', pub)}
+                    />
+                    <span className="filter-checkbox__custom" />
+                    <span className="filter-checkbox__text">{pub}</span>
                   </label>
                 ))}
               </div>
