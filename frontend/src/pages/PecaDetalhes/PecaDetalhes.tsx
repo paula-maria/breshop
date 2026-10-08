@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { MapPin, MessageCircle, Share2, Check } from 'lucide-react'
 import { api } from '../../services/api'
+import { whatsappUrl } from '../../utils/whatsapp'
 
 type PecaInfo = {
   id: string
@@ -30,9 +31,7 @@ export default function PecaDetalhes() {
     async function loadPeca() {
       if (!id) return
       try {
-        const { data } = await api.get(`/pecas`)
-        // No futuro, adicionar endpoint GET /pecas/:id no backend
-        const item = data.find((p: any) => p.id === id)
+        const { data: item } = await api.get(`/pecas/${id}`)
         if (item) {
           setPeca({
             id: item.id,
@@ -64,10 +63,8 @@ export default function PecaDetalhes() {
   if (!peca) return <div style={{ padding: '40px', textAlign: 'center' }}>Peça não encontrada!</div>
 
   const handleContactClick = () => {
-    const message = encodeURIComponent(
-      `Olá! Vi a peça *${peca.nome}* (${peca.preco}) no Breshop e gostaria de saber se ainda está disponível.`
-    )
-    window.open(`https://wa.me/${peca.brechoWhatsapp}?text=${message}`, '_blank')
+    const message = `Olá! Vi a peça *${peca.nome}* (${peca.preco}) no Breshop e gostaria de saber se ainda está disponível.`
+    window.open(whatsappUrl(peca.brechoWhatsapp, message), '_blank')
   }
 
   const handleShare = () => {

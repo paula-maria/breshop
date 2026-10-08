@@ -12,8 +12,8 @@ export default function ClientDashboard() {
   const favoritesCount = JSON.parse(localStorage.getItem('breshop_favoritos') || '[]').length
 
   useEffect(() => {
-    api.get('/pecas').then((res) => {
-      const mapped = res.data.slice(0, 4).map((p: any) => ({
+    api.get('/pecas', { params: { limit: 4 } }).then((res) => {
+      const mapped = res.data.data.map((p: any) => ({
         id: p.id,
         nome: p.nome,
         brecho: p.brecho?.nome || 'Brechó',

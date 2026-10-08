@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { prisma } from '../config/prisma'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
+import { paginated, parsePagination, queryList, queryString } from '../utils/query'
 
 const createPecaSchema = z.object({
   nome: z.string().min(2),
@@ -46,26 +48,68 @@ export class PecaController {
 
   async list(req: Request, res: Response) {
     try {
-      const { categoria } = req.query
-      
-      const pecas = await prisma.peca.findMany({
-        where: categoria && categoria !== 'todas' ? {
-          categoria: {
-            equals: categoria as string,
-            mode: 'insensitive'
-          }
-        } : undefined,
-        include: {
-          brecho: {
-            select: { nome: true, cidade: true, estado: true }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      })
+      const { page, limit, skip } = parsePagination(req.query)
+      const categorias = queryList(req.query.categoria).filter((c) => c.toLowerCase() !== 'todas')
+      const tamanhos = queryList(req.query.tamanho)
+      const condicoes = queryList(req.query.condicao)
+      const tipos = queryList(req.query.tipo)
+      const q = queryString(req.query.q)
 
-      res.status(200).json(pecas)
+      const and: Prisma.PecaWhereInput[] = []
+      if (categorias.length) {
+        and.push({ OR: categorias.map((c) => ({ categoria: { equals: c, mode: 'insensitive' as const } })) })
+      }
+      if (tamanhos.length) and.push({ tamanho: { in: tamanhos } })
+      if (condicoes.length) and.push({ condicao: { in: condicoes } })
+      if (tipos.length) {
+        and.push({ OR: tipos.map((t) => ({ nome: { contains: t, mode: 'insensitive' as const } })) })
+      }
+      if (req.query.disponivel === 'true') and.push({ disponivel: true })
+      if (q) {
+        and.push({
+          OR: [
+            { nome: { contains: q, mode: 'insensitive' } },
+            { categoria: { contains: q, mode: 'insensitive' } },
+            { brecho: { nome: { contains: q, mode: 'insensitive' } } },
+          ],
+        })
+      }
+      const where: Prisma.PecaWhereInput = and.length ? { AND: and } : {}
+
+      const [pecas, total] = await Promise.all([
+        prisma.peca.findMany({
+          where,
+          include: { brecho: { select: { nome: true, cidade: true, estado: true } } },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.peca.count({ where }),
+      ])
+
+      res.status(200).json(paginated(pecas, total, page, limit))
     } catch (error: any) {
       res.status(500).json({ error: 'Erro ao listar peças' })
+    }
+  }
+
+  async getById(req: Request, res: Response) {
+    try {
+      const peca = await prisma.peca.findUnique({
+        where: { id: String(req.params.id) },
+        include: {
+          brecho: { select: { id: true, nome: true, cidade: true, estado: true, whatsapp: true } },
+        },
+      })
+
+      if (!peca) {
+        res.status(404).json({ error: 'Peça não encontrada' })
+        return
+      }
+
+      res.status(200).json(peca)
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao buscar peça' })
     }
   }
 

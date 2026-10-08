@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { prisma } from '../config/prisma'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
+import { paginated, parsePagination, queryString } from '../utils/query'
 
 const createBrechoSchema = z.object({
   // 01 - Informações Básicas
@@ -63,25 +65,56 @@ export class BrechoController {
 
   async list(req: Request, res: Response) {
     try {
-      const { cidade } = req.query
-      
-      const brechos = await prisma.brecho.findMany({
-        where: cidade ? {
-          cidade: {
-            contains: cidade as string,
-            mode: 'insensitive'
-          }
-        } : undefined,
-        include: {
-          pecas: {
-            take: 4 // Traz as últimas 4 peças de cada brechó para a vitrine
-          }
-        }
-      })
+      const { page, limit, skip } = parsePagination(req.query)
+      const cidade = queryString(req.query.cidade)
+      const q = queryString(req.query.q)
 
-      res.status(200).json(brechos)
+      const and: Prisma.BrechoWhereInput[] = []
+      if (cidade) and.push({ cidade: { equals: cidade, mode: 'insensitive' } })
+      if (q) {
+        and.push({
+          OR: [
+            { nome: { contains: q, mode: 'insensitive' } },
+            { descricao: { contains: q, mode: 'insensitive' } },
+            { bairro: { contains: q, mode: 'insensitive' } },
+            { cidade: { contains: q, mode: 'insensitive' } },
+          ],
+        })
+      }
+      const where: Prisma.BrechoWhereInput = and.length ? { AND: and } : {}
+
+      const [brechos, total] = await Promise.all([
+        prisma.brecho.findMany({
+          where,
+          include: {
+            pecas: {
+              take: 4 // Traz as últimas 4 peças de cada brechó para a vitrine
+            }
+          },
+          orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+          skip,
+          take: limit,
+        }),
+        prisma.brecho.count({ where }),
+      ])
+
+      res.status(200).json(paginated(brechos, total, page, limit))
     } catch (error: any) {
       res.status(500).json({ error: 'Erro ao listar brechós' })
+    }
+  }
+
+  async cidades(req: Request, res: Response) {
+    try {
+      const rows = await prisma.brecho.findMany({
+        where: { cidade: { not: null } },
+        select: { cidade: true },
+        distinct: ['cidade'],
+        orderBy: { cidade: 'asc' },
+      })
+      res.status(200).json(rows.map((r) => r.cidade).filter(Boolean))
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao listar cidades' })
     }
   }
 
@@ -99,9 +132,68 @@ export class BrechoController {
         return
       }
 
-      res.status(200).json(brecho)
+      const stats = await prisma.avaliacao.aggregate({
+        where: { brechoId: brecho.id },
+        _avg: { nota: true },
+        _count: true,
+      })
+
+      res.status(200).json({
+        ...brecho,
+        avaliacaoMedia: stats._avg?.nota ?? null,
+        avaliacaoTotal: stats._count ?? 0,
+      })
     } catch (error: any) {
       res.status(500).json({ error: 'Erro ao buscar brechó' })
+    }
+  }
+
+  async minhaAvaliacao(req: Request, res: Response) {
+    try {
+      const avaliacao = await prisma.avaliacao.findUnique({
+        where: { userId_brechoId: { userId: req.user!.id, brechoId: String(req.params.id) } },
+        select: { nota: true, comentario: true },
+      })
+      res.status(200).json(avaliacao)
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao buscar avaliação' })
+    }
+  }
+
+  async avaliar(req: Request, res: Response) {
+    try {
+      if (!req.user || req.user.role !== 'CLIENTE') {
+        res.status(403).json({ error: 'Apenas clientes podem avaliar brechós' })
+        return
+      }
+
+      const nota = Number(req.body.nota)
+      const comentario = typeof req.body.comentario === 'string' && req.body.comentario.trim()
+        ? req.body.comentario.trim()
+        : null
+
+      if (!Number.isInteger(nota) || nota < 1 || nota > 5) {
+        res.status(400).json({ error: 'A nota deve ser um inteiro de 1 a 5' })
+        return
+      }
+
+      const brechoId = String(req.params.id)
+      const brecho = await prisma.brecho.findUnique({ where: { id: brechoId }, select: { id: true } })
+      if (!brecho) {
+        res.status(404).json({ error: 'Brechó não encontrado' })
+        return
+      }
+
+      const avaliacao = await prisma.avaliacao.upsert({
+        where: { userId_brechoId: { userId: req.user.id, brechoId } },
+        create: { nota, comentario, userId: req.user.id, brechoId },
+        update: { nota, comentario },
+        select: { nota: true, comentario: true },
+      })
+
+      res.status(200).json(avaliacao)
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao salvar avaliação' })
     }
   }
 

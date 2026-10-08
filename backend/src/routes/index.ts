@@ -26,13 +26,17 @@ routes.get('/auth/me', authMiddleware, authController.me.bind(authController))
 routes.post('/brechos', authMiddleware, brechoController.create.bind(brechoController))
 routes.get('/brechos/minha-loja', authMiddleware, brechoController.myStore.bind(brechoController))
 routes.get('/brechos', brechoController.list.bind(brechoController))
+routes.get('/brechos/cidades', brechoController.cidades.bind(brechoController))
 routes.get('/brechos/:id', brechoController.getById.bind(brechoController))
+routes.get('/brechos/:id/avaliacao', authMiddleware, brechoController.minhaAvaliacao.bind(brechoController))
+routes.post('/brechos/:id/avaliacoes', authMiddleware, brechoController.avaliar.bind(brechoController))
 
 // Rotas de Peças
 routes.post('/pecas', authMiddleware, pecaController.create.bind(pecaController))
 routes.put('/pecas/:id', authMiddleware, pecaController.update.bind(pecaController))
 routes.delete('/pecas/:id', authMiddleware, pecaController.delete.bind(pecaController))
 routes.get('/pecas', pecaController.list.bind(pecaController))
+routes.get('/pecas/:id', pecaController.getById.bind(pecaController))
 
 // Rota genérica de Upload
 routes.post('/upload', authMiddleware, uploadMiddleware.single('file'), (req, res) => {

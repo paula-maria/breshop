@@ -112,16 +112,6 @@ O input de busca no header é puramente visual — sem `onSubmit`, sem `onChange
 
 Se a chamada `api.post('/auth/logout')` falhar (backend fora do ar), o cookie `token` persiste no navegador mas o `user` é zerado. Na próxima visita, `checkAuth` vai restaurar a sessão do cookie antigo.
 
-### 13. Dados de avaliação são hardcoded
-**Arquivo:** [BrechoDetalhes.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/BrechoDetalhes/BrechoDetalhes.tsx#L36-L37)
-
-```ts
-rating: '5,0',
-reviewsCount: 1,
-```
-Todo brechó mostra "5,0 ★ (1 avaliação)" mesmo sem avaliações. Existe o model `Avaliacao` no Prisma mas não é usado.
-
----
 
 ## 🟡 MÉDIO — Problemas de Fluidez / UX
 
@@ -137,30 +127,6 @@ Após a correção anterior, o proprietário vai direto para `/painel`. Mas o `/
 **Arquivo:** [Profile.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/client/Profile/Profile.tsx#L21-L25)
 
 Se o `PUT /auth/me` falha (e vai falhar, pois a rota não existe — item #4), o `catch` ignora e o `setTimeout` redireciona como se tivesse dado certo.
-
-### 16. Cidades hardcoded na listagem de brechós
-**Arquivo:** [Brechos.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/Brechos/Brechos.tsx#L65)
-
-```ts
-const cities = ['Todas', 'Macapá', 'Santana', 'Laranjal do Jari']
-```
-Se um brechó de outra cidade se cadastrar, não aparecerá nos filtros de cidade. As cidades deveriam ser extraídas dinamicamente dos dados.
-
-### 17. Números sociais fabricados na Hero
-**Arquivo:** [Home.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/Home/Home.tsx#L101-L108)
-
-"1200+ clientes satisfeitos" com avatares estáticos de cores sólidas. Isso pode gerar desconfiança se o sistema tiver poucos usuários.
-
-### 18. WhatsApp sem código de país consistente
-**Arquivo:** [BrechoDetalhes.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/BrechoDetalhes/BrechoDetalhes.tsx#L95-L99) vs [PecaDetalhes.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/PecaDetalhes/PecaDetalhes.tsx#L70)
-
-- `BrechoDetalhes`: adiciona `55` ao número → `wa.me/55${wppNumber}`
-- `PecaDetalhes`: NÃO adiciona → `wa.me/${peca.brechoWhatsapp}`
-
-Se o número salvo no banco não tiver `55`, o link do `PecaDetalhes` vai gerar um WhatsApp inválido.
-
-### 19. Sem paginação em nenhuma listagem
-Todas as rotas (`GET /pecas`, `GET /brechos`) retornam **todos** os registros. Com 1000+ peças, a performance vai degradar significativamente.
 
 ### 20. `Painel.tsx` — Edição perde a descrição original da peça
 **Arquivo:** [Painel.tsx](file:///home/paula/Downloads/breshop/frontend/src/pages/Painel/Painel.tsx#L210)

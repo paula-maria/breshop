@@ -3,11 +3,13 @@ import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { Star, MapPin, Clock, Camera, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import { api } from '../../services/api'
+import { whatsappUrl } from '../../utils/whatsapp'
+import { useAuth } from '../../contexts/AuthContext'
 
 type BrechoInfo = {
   id: string
   nome: string
-  rating: string
+  rating: number | null
   reviewsCount: number
   localizacao: string
   horario: string
@@ -24,6 +26,10 @@ export default function BrechoDetalhes() {
   const [loading, setLoading] = useState(true)
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todas')
   const [searchParams] = useSearchParams()
+  const { user } = useAuth()
+  const [minhaNota, setMinhaNota] = useState(0)
+  const [comentario, setComentario] = useState('')
+  const [avaliacaoMsg, setAvaliacaoMsg] = useState('')
 
   useEffect(() => {
     async function fetchBrecho() {
@@ -33,8 +39,8 @@ export default function BrechoDetalhes() {
         const mappedBrecho: BrechoInfo = {
           id: b.id,
           nome: b.nome,
-          rating: '5,0',
-          reviewsCount: 1,
+          rating: b.avaliacaoMedia ?? null,
+          reviewsCount: b.avaliacaoTotal ?? 0,
           localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
           horario: b.horarios || 'Horários não informados',
           bannerUrl: b.capaUrl || '/images/brecho_maria.png',
@@ -62,6 +68,32 @@ export default function BrechoDetalhes() {
     }
     if (id) fetchBrecho()
   }, [id])
+
+  useEffect(() => {
+    if (!id || user?.role !== 'CLIENTE') return
+    api.get(`/brechos/${id}/avaliacao`).then((res) => {
+      if (res.data) {
+        setMinhaNota(res.data.nota)
+        setComentario(res.data.comentario ?? '')
+      }
+    }).catch(() => {})
+  }, [id, user])
+
+  const handleAvaliar = async () => {
+    if (!minhaNota) return
+    try {
+      await api.post(`/brechos/${id}/avaliacoes`, { nota: minhaNota, comentario })
+      const res = await api.get(`/brechos/${id}`)
+      setBrecho((prev) => prev && {
+        ...prev,
+        rating: res.data.avaliacaoMedia ?? null,
+        reviewsCount: res.data.avaliacaoTotal ?? 0,
+      })
+      setAvaliacaoMsg('Avaliação salva!')
+    } catch {
+      setAvaliacaoMsg('Não foi possível salvar a avaliação.')
+    }
+  }
 
   const categories = ['Todas', 'Roupas', 'Calçados', 'Acessórios']
 
@@ -92,11 +124,8 @@ export default function BrechoDetalhes() {
   })
 
   const handleWhatsappClick = () => {
-    const wppNumber = brecho.whatsapp.replace(/\D/g, '')
-    const message = encodeURIComponent(
-      `Olá! Encontrei o ${brecho.nome} no Breshop e gostaria de tirar algumas dúvidas.`
-    )
-    window.open(`https://wa.me/55${wppNumber}?text=${message}`, '_blank')
+    const message = `Olá! Encontrei o ${brecho.nome} no Breshop e gostaria de tirar algumas dúvidas.`
+    window.open(whatsappUrl(brecho.whatsapp, message), '_blank')
   }
 
   return (
@@ -117,16 +146,59 @@ export default function BrechoDetalhes() {
           <div className="store-info-card__title-area">
             <h1 className="store-info-card__name">{brecho.nome}</h1>
             <div className="store-info-card__rating">
-              <span className="stars" style={{ display: 'inline-flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="#f59e0b" stroke="#f59e0b" />
-                ))}
-              </span>
-              <span className="rating-score">{brecho.rating}</span>
-              <span className="reviews-count">({brecho.reviewsCount} avaliações)</span>
+              {brecho.reviewsCount > 0 && brecho.rating !== null ? (
+                <>
+                  <span className="stars" style={{ display: 'inline-flex', gap: '2px' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        fill={i < Math.round(brecho.rating!) ? '#f59e0b' : 'none'}
+                        stroke="#f59e0b"
+                      />
+                    ))}
+                  </span>
+                  <span className="rating-score">{brecho.rating.toFixed(1).replace('.', ',')}</span>
+                  <span className="reviews-count">
+                    ({brecho.reviewsCount} {brecho.reviewsCount === 1 ? 'avaliação' : 'avaliações'})
+                  </span>
+                </>
+              ) : (
+                <span className="reviews-count">Ainda sem avaliações</span>
+              )}
             </div>
           </div>
         </div>
+
+        {user?.role === 'CLIENTE' && (
+          <div className="store-rate" style={{ margin: '12px 0' }}>
+            <strong>Sua avaliação:</strong>{' '}
+            <span style={{ display: 'inline-flex', gap: '2px', verticalAlign: 'middle' }}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-label={`${n} estrelas`}
+                  onClick={() => setMinhaNota(n)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  <Star size={22} fill={n <= minhaNota ? '#f59e0b' : 'none'} stroke="#f59e0b" />
+                </button>
+              ))}
+            </span>
+            <input
+              type="text"
+              placeholder="Comentário (opcional)"
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              style={{ marginLeft: 12, padding: 6, minWidth: 220 }}
+            />
+            <button type="button" onClick={handleAvaliar} disabled={!minhaNota} style={{ marginLeft: 8 }}>
+              Enviar
+            </button>
+            {avaliacaoMsg && <span style={{ marginLeft: 8 }}>{avaliacaoMsg}</span>}
+          </div>
+        )}
 
         <div className="store-info-card__meta">
           <div className="meta-item">

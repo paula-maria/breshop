@@ -1,8 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import { api } from '../../services/api'
+
+const PAGE_SIZE = 12
+const TONES: ('teal' | 'navy' | 'cyan')[] = ['teal', 'navy', 'cyan']
+
+type BrechoItem = CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan'; cidade: string }
+type PecaItem = CardPecaProps & { genero?: string; categoria?: string }
 
 export default function Brechos() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -11,69 +17,108 @@ export default function Brechos() {
   const cityParam = searchParams.get('cidade') || 'Todas'
   const queryParam = searchParams.get('q') || ''
   const [searchQuery, setSearchQuery] = useState(queryParam)
+  const [debouncedQuery, setDebouncedQuery] = useState(queryParam)
 
-  const [allBrechosList, setAllBrechosList] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan'; cidade: string })[]>([])
-  const [allPecasCatalog, setAllPecasCatalog] = useState<(CardPecaProps & { genero?: string, categoria?: string })[]>([])
+  const [brechos, setBrechos] = useState<BrechoItem[]>([])
+  const [pecas, setPecas] = useState<PecaItem[]>([])
+  const [cities, setCities] = useState<string[]>(['Todas'])
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [brechosRes, pecasRes] = await Promise.all([
-          api.get('/brechos'),
-          api.get('/pecas')
-        ])
-
-        const tones: ('teal' | 'navy' | 'cyan')[] = ['teal', 'navy', 'cyan']
-
-        const mappedBrechos = brechosRes.data.map((b: any, index: number) => ({
-          id: b.id,
-          nome: b.nome,
-          localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
-          cidade: b.cidade || '',
-          descricao: b.descricao || 'Sem descrição',
-          tone: tones[index % tones.length]
-        }))
-
-        const mappedPecas = pecasRes.data.map((p: any) => ({
-          id: p.id,
-          nome: p.nome,
-          brecho: p.brecho.nome,
-          preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
-          tamanho: `Tam. ${p.tamanho}`,
-          categoria: p.categoria,
-          condicao: p.condicao,
-          statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
-          genero: 'todas', // backend doesnt have genero explicitly yet, but we have categoria
-          imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
-        }))
-
-        setAllBrechosList(mappedBrechos)
-        setAllPecasCatalog(mappedPecas)
-      } catch (err) {
-        console.error('Erro ao buscar dados', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
+  const [loadingMore, setLoadingMore] = useState(false)
 
   // Determine active view tab: 'feminino' | 'masculino' | 'todas' | 'lojas'
   const activeTab = catParam || (viewParam === 'pecas' ? 'todas' : 'lojas')
 
-  const cities = ['Todas', 'Macapá', 'Santana', 'Laranjal do Jari']
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery), 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
 
-  const handleTabChange = (tab: 'feminino' | 'masculino' | 'todas' | 'lojas') => {
-    const newParams = new URLSearchParams(searchParams)
-    if (tab === 'lojas') {
-      newParams.delete('cat')
-      newParams.set('view', 'lojas')
-    } else {
-      newParams.delete('view')
-      newParams.set('cat', tab)
+  useEffect(() => {
+    api.get('/brechos/cidades')
+      .then((res) => setCities(['Todas', ...res.data]))
+      .catch(() => {})
+  }, [])
+
+  // Filtros enviados ao backend; mudar qualquer um reinicia a listagem na página 1
+  const categoria = searchParams.get('categoria') || ''
+  const tipo = searchParams.get('tipo') || ''
+  const tamanho = searchParams.get('tamanho') || ''
+  const condicao = searchParams.get('condicao') || ''
+  const disponivel = searchParams.get('disponivel') === 'true'
+
+  const fetchPage = useCallback(async (pageToLoad: number) => {
+    const base = { page: pageToLoad, limit: PAGE_SIZE, q: debouncedQuery || undefined }
+    if (activeTab === 'lojas') {
+      const res = await api.get('/brechos', {
+        params: { ...base, cidade: cityParam === 'Todas' ? undefined : cityParam },
+      })
+      const mapped: BrechoItem[] = res.data.data.map((b: any, index: number) => ({
+        id: b.id,
+        nome: b.nome,
+        localizacao: b.cidade ? `${b.bairro || ''}, ${b.cidade} - ${b.estado || ''}`.replace(/^, /, '') : 'Localização não informada',
+        cidade: b.cidade || '',
+        descricao: b.descricao || 'Sem descrição',
+        tone: TONES[(index + (pageToLoad - 1) * PAGE_SIZE) % TONES.length],
+      }))
+      return { items: mapped, totalPages: res.data.meta.totalPages, isBrecho: true as const }
     }
-    setSearchParams(newParams)
+
+    const res = await api.get('/pecas', {
+      params: {
+        ...base,
+        categoria: categoria || undefined,
+        tipo: tipo || undefined,
+        tamanho: tamanho || undefined,
+        condicao: condicao || undefined,
+        disponivel: disponivel || undefined,
+      },
+    })
+    const mapped: PecaItem[] = res.data.data.map((p: any) => ({
+      id: p.id,
+      nome: p.nome,
+      brecho: p.brecho.nome,
+      preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+      tamanho: `Tam. ${p.tamanho}`,
+      categoria: p.categoria,
+      condicao: p.condicao,
+      statusTag: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
+      genero: 'todas', // backend doesnt have genero explicitly yet, but we have categoria
+      imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
+    }))
+    return { items: mapped, totalPages: res.data.meta.totalPages, isBrecho: false as const }
+  }, [activeTab, cityParam, debouncedQuery, categoria, tipo, tamanho, condicao, disponivel])
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    fetchPage(1)
+      .then((r) => {
+        if (cancelled) return
+        if (r.isBrecho) setBrechos(r.items)
+        else setPecas(r.items)
+        setPage(1)
+        setTotalPages(r.totalPages)
+      })
+      .catch((err) => console.error('Erro ao buscar dados', err))
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [fetchPage])
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true)
+    try {
+      const r = await fetchPage(page + 1)
+      if (r.isBrecho) setBrechos((prev) => [...prev, ...r.items])
+      else setPecas((prev) => [...prev, ...r.items])
+      setPage(page + 1)
+      setTotalPages(r.totalPages)
+    } catch (err) {
+      console.error('Erro ao carregar mais', err)
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
   const handleCityChange = (city: string) => {
@@ -86,59 +131,11 @@ export default function Brechos() {
     setSearchParams(newParams)
   }
 
-  // Filter brechós list
-  const filteredBrechos = allBrechosList.filter((brecho) => {
-    const matchesCity = cityParam === 'Todas' || (brecho.cidade && brecho.cidade.toLowerCase() === cityParam.toLowerCase())
-    const matchesSearch =
-      brecho.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brecho.localizacao.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (brecho.descricao && brecho.descricao.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    return matchesCity && matchesSearch
-  })
-
-  // Leitura dos filtros avançados da URL
-  const searchCatParams = searchParams.get('categoria') ? searchParams.get('categoria')!.split(',') : []
-  const searchTipoParams = searchParams.get('tipo') ? searchParams.get('tipo')!.split(',') : []
-  const searchTamanhoParams = searchParams.get('tamanho') ? searchParams.get('tamanho')!.split(',') : []
-  const searchCondicaoParams = searchParams.get('condicao') ? searchParams.get('condicao')!.split(',') : []
-  const disponivelFilter = searchParams.get('disponivel') === 'true'
-
-  // Filter peças catalog list
-  const filteredPecas = allPecasCatalog.filter((peca) => {
-    // Para simplificar no MVP, ignoramos 'feminino' e 'masculino' estritos se o banco não tem gênero definido,
-    // a menos que queiramos forçar categorias a gêneros. No momento 'todas' inclui tudo.
-    const matchesSearch =
-      peca.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      peca.brecho.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (peca.categoria && peca.categoria.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    const matchesAvail = !disponivelFilter || peca.statusTag === 'DISPONÍVEL'
-    
-    // Filtros complexos (sidebar)
-    const matchesCat = searchCatParams.length === 0 || (peca.categoria && searchCatParams.includes(peca.categoria))
-    
-    // Como não existe 'tipo' no BD de forma estrita, buscamos se o tipo (Camisa, Saia, etc) faz parte do nome da peça
-    const matchesTipo = searchTipoParams.length === 0 || searchTipoParams.some(tipo => peca.nome.toLowerCase().includes(tipo.toLowerCase()))
-    
-    // Condição da peça (Novo, Seminovo, etc)
-    const matchesCondicao = searchCondicaoParams.length === 0 || (peca.condicao && searchCondicaoParams.includes(peca.condicao))
-    
-    // Tamanho (como adicionamos 'Tam. ' antes, comparamos exatamente para não confundir 'G' com 'GG')
-    const matchesTamanho = searchTamanhoParams.length === 0 || searchTamanhoParams.some(t => peca.tamanho === `Tam. ${t}`)
-
-    return matchesSearch && matchesAvail && matchesCat && matchesTipo && matchesCondicao && matchesTamanho
-  })
-
   const getTitle = () => {
     if (activeTab === 'feminino') return 'Peças Femininas'
     if (activeTab === 'masculino') return 'Peças Masculinas'
     if (activeTab === 'todas') return 'Todas as Peças Garimpadas'
     return 'Brechós Cadastrados'
-  }
-
-  if (loading) {
-    return <div style={{ padding: 60, textAlign: 'center' }}>Carregando catálogo oficial...</div>
   }
 
   return (
@@ -178,10 +175,12 @@ export default function Brechos() {
       </div>
 
       {/* RENDER PRODUCTS OR BRECHÓS GRID BASED ON ACTIVE SWITCH */}
-      {activeTab === 'lojas' ? (
-        filteredBrechos.length > 0 ? (
+      {loading ? (
+        <div style={{ padding: 60, textAlign: 'center' }}>Carregando catálogo oficial...</div>
+      ) : activeTab === 'lojas' ? (
+        brechos.length > 0 ? (
           <div className="grid-3-cols">
-            {filteredBrechos.map((brecho) => (
+            {brechos.map((brecho) => (
               <CardBrecho key={brecho.id} {...brecho} />
             ))}
           </div>
@@ -200,9 +199,9 @@ export default function Brechos() {
             </button>
           </div>
         )
-      ) : filteredPecas.length > 0 ? (
+      ) : pecas.length > 0 ? (
         <div className="grid-3-cols">
-          {filteredPecas.map((peca) => (
+          {pecas.map((peca) => (
             <CardPeca key={peca.id} {...peca} />
           ))}
         </div>
@@ -218,6 +217,14 @@ export default function Brechos() {
             }}
           >
             Limpar todos os filtros
+          </button>
+        </div>
+      )}
+
+      {!loading && page < totalPages && (
+        <div style={{ textAlign: 'center', margin: '24px 0' }}>
+          <button type="button" className="btn btn-ghost" onClick={handleLoadMore} disabled={loadingMore}>
+            {loadingMore ? 'Carregando...' : 'Carregar mais'}
           </button>
         </div>
       )}

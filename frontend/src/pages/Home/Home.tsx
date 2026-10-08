@@ -12,6 +12,7 @@ export default function Home() {
   const navigate = useNavigate()
   const [featuredPecas, setFeaturedPecas] = useState<CardPecaProps[]>([])
   const [exploreBrechos, setExploreBrechos] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[]>([])
+  const [totals, setTotals] = useState({ pecas: 0, brechos: 0 })
   const [carouselIndex, setCarouselIndex] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -19,11 +20,11 @@ export default function Home() {
     async function loadData() {
       try {
         const [pecasRes, brechosRes] = await Promise.all([
-          api.get('/pecas'),
-          api.get('/brechos')
+          api.get('/pecas', { params: { limit: 8 } }),
+          api.get('/brechos', { params: { limit: 3 } })
         ])
         
-        const mappedPecas = pecasRes.data.map((p: any) => ({
+        const mappedPecas = pecasRes.data.data.map((p: any) => ({
           id: p.id,
           nome: p.nome,
           brecho: p.brecho?.nome || 'Brechó',
@@ -34,9 +35,10 @@ export default function Home() {
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : '',
         }))
         setFeaturedPecas(mappedPecas)
+        setTotals({ pecas: pecasRes.data.meta.total, brechos: brechosRes.data.meta.total })
 
         const tones: ('teal'|'navy'|'cyan')[] = ['teal', 'navy', 'cyan']
-        const mappedBrechos = brechosRes.data.slice(0, 3).map((b: any, index: number) => ({
+        const mappedBrechos = brechosRes.data.data.map((b: any, index: number) => ({
           id: b.id,
           nome: b.nome,
           localizacao: b.cidade ? `${b.cidade} - ${b.estado}` : 'Sem localização',
@@ -98,14 +100,14 @@ export default function Home() {
           </p>
 
 
-          <div className="hero-section__social-proof">
-            <div className="hero-section__avatars">
-              <div className="avatar"></div>
-              <div className="avatar" style={{ background: '#aaa' }}></div>
-              <div className="avatar" style={{ background: '#888' }}></div>
+          {totals.pecas > 0 && (
+            <div className="hero-section__social-proof">
+              <span className="hero-section__proof-text">
+                {totals.pecas} {totals.pecas === 1 ? 'peça' : 'peças'} em {totals.brechos}{' '}
+                {totals.brechos === 1 ? 'brechó' : 'brechós'}
+              </span>
             </div>
-            <span className="hero-section__proof-text">1200+ clientes satisfeitos</span>
-          </div>
+          )}
         </div>
 
         {/* CARROSSEL DE PEÇAS */}
