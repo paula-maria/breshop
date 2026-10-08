@@ -219,7 +219,7 @@ Isso constrói uma única imagem (`Dockerfile` da raiz) contendo o frontend comp
 - Para parar: `docker compose down` (adicione `-v` para apagar também os dados do banco)
 - Antes de usar em produção, altere o `JWT_SECRET` no `docker-compose.yml`.
 
-> O banco deste compose não expõe a porta 5432 no host. Para desenvolvimento manual (Opção B), use o `docker-compose.yml` da pasta `backend/`.
+> O mesmo `docker-compose.yml` serve para o desenvolvimento manual (Opção B): `docker compose up -d db` sobe só o banco, acessível em `localhost:5432`.
 
 ### Opção B: Manual (desenvolvimento)
 
@@ -261,8 +261,8 @@ JWT_SECRET="troque-por-um-segredo-aleatorio-longo"
 Para gerar um segredo forte no terminal, rode:
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
-# Inicie o PostgreSQL:
-   docker compose up -d ou com db no final
+# Inicie apenas o PostgreSQL (a partir da raiz do projeto, usando o docker-compose.yml da raiz):
+   docker compose -f ../docker-compose.yml up -d db
 
 # Gere o cliente Prisma e aplique as migrações:
    npx prisma generate
