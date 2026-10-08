@@ -2,17 +2,28 @@ import { Request, Response } from 'express'
 import { prisma } from '../config/prisma'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
+import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS_POR_CATEGORIA } from '../constants/pecas'
 import { paginated, parsePagination, queryList, queryString } from '../utils/query'
 
-const createPecaSchema = z.object({
+const baseSchema = z.object({
   nome: z.string().min(2),
   descricao: z.string().optional(),
   preco: z.number().positive(),
-  tamanho: z.string().min(1),
-  categoria: z.string().min(2),
-  condicao: z.string().min(2),
+  tamanho: z.enum(TAMANHOS),
+  categoria: z.enum(CATEGORIAS),
+  tipo: z.string().min(1),
+  condicao: z.enum(CONDICOES),
   fotos: z.array(z.string()).default([]),
 })
+
+function validateTipo(data: { categoria?: (typeof CATEGORIAS)[number]; tipo?: string }, ctx: z.RefinementCtx) {
+  if (data.categoria && data.tipo && !TIPOS_POR_CATEGORIA[data.categoria].includes(data.tipo)) {
+    ctx.addIssue({ code: 'custom', path: ['tipo'], message: `Tipo inválido para a categoria ${data.categoria}` })
+  }
+}
+
+const createPecaSchema = baseSchema.superRefine(validateTipo)
+const updatePecaSchema = baseSchema.partial().superRefine(validateTipo)
 
 export class PecaController {
   async create(req: Request, res: Response) {
@@ -62,8 +73,22 @@ export class PecaController {
       if (tamanhos.length) and.push({ tamanho: { in: tamanhos } })
       if (condicoes.length) and.push({ condicao: { in: condicoes } })
       if (tipos.length) {
-        and.push({ OR: tipos.map((t) => ({ nome: { contains: t, mode: 'insensitive' as const } })) })
+        // Peças antigas sem tipo continuam encontráveis pelo nome
+        and.push({
+          OR: [
+            { tipo: { in: tipos } },
+            ...tipos.map((t) => ({ tipo: null, nome: { contains: t, mode: 'insensitive' as const } })),
+          ],
+        })
       }
+      const minPreco = Number(req.query.minPreco)
+      const maxPreco = Number(req.query.maxPreco)
+      if (queryString(req.query.minPreco) && !isNaN(minPreco)) and.push({ preco: { gte: minPreco } })
+      if (queryString(req.query.maxPreco) && !isNaN(maxPreco)) and.push({ preco: { lte: maxPreco } })
+      const localizacao = queryString(req.query.localizacao)
+      if (localizacao) and.push({ brecho: { cidade: { equals: localizacao, mode: 'insensitive' } } })
+      const brechoNome = queryString(req.query.brecho)
+      if (brechoNome) and.push({ brecho: { nome: { contains: brechoNome, mode: 'insensitive' } } })
       if (req.query.disponivel === 'true') and.push({ disponivel: true })
       if (q) {
         and.push({
@@ -121,7 +146,7 @@ export class PecaController {
         return
       }
 
-      const data = createPecaSchema.partial().parse(req.body)
+      const data = updatePecaSchema.parse(req.body)
 
       const peca = await prisma.peca.findUnique({
         where: { id },
@@ -133,6 +158,13 @@ export class PecaController {
         return
       }
       
+      const categoriaFinal = (data.categoria ?? peca.categoria) as (typeof CATEGORIAS)[number]
+      const tipoFinal = data.tipo ?? peca.tipo
+      if (tipoFinal && !TIPOS_POR_CATEGORIA[categoriaFinal]?.includes(tipoFinal)) {
+        res.status(400).json({ error: `Tipo inválido para a categoria ${categoriaFinal}` })
+        return
+      }
+
       // permitimos update de 'disponivel' também, que não está no schema principal
       if (req.body.disponivel !== undefined) {
         data.disponivel = req.body.disponivel

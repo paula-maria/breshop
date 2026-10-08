@@ -81,6 +81,7 @@ model Peca {
   preco       Float
   tamanho     String
   categoria   String
+  tipo        String?
   condicao    String
   fotos       String[]
   disponivel  Boolean  @default(true)

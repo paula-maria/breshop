@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MapPin, MessageCircle, Share2, Check } from 'lucide-react'
+import { MapPin, MessageCircle, Share2, Check, ShoppingCart } from 'lucide-react'
 import { api } from '../../services/api'
 import { whatsappUrl } from '../../utils/whatsapp'
+import { useAuth } from '../../contexts/AuthContext'
+import { addToCart, getCart, subscribeToCart } from '../../utils/cart'
 
 type PecaInfo = {
   id: string
   nome: string
   preco: string
+  precoNumero: number
+  disponivel: boolean
   tamanho: string
   condicao: string
   categoria: string
@@ -26,6 +30,14 @@ export default function PecaDetalhes() {
   const [peca, setPeca] = useState<PecaInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const { user } = useAuth()
+  const [inCart, setInCart] = useState(false)
+
+  useEffect(() => {
+    const sync = () => setInCart(getCart().some((i) => i.id === id))
+    sync()
+    return subscribeToCart(sync)
+  }, [id])
 
   useEffect(() => {
     async function loadPeca() {
@@ -37,6 +49,8 @@ export default function PecaDetalhes() {
             id: item.id,
             nome: item.nome,
             preco: `R$ ${item.preco.toFixed(2).replace('.', ',')}`,
+            precoNumero: item.preco,
+            disponivel: item.disponivel !== false,
             tamanho: item.tamanho,
             condicao: item.condicao || 'Não informada',
             categoria: item.categoria || 'Outros',
@@ -65,6 +79,19 @@ export default function PecaDetalhes() {
   const handleContactClick = () => {
     const message = `Olá! Vi a peça *${peca.nome}* (${peca.preco}) no Breshop e gostaria de saber se ainda está disponível.`
     window.open(whatsappUrl(peca.brechoWhatsapp, message), '_blank')
+  }
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: peca.id,
+      nome: peca.nome,
+      brechoId: peca.brechoId,
+      brechoNome: peca.brechoNome,
+      tamanho: peca.tamanho,
+      preco: peca.precoNumero,
+      imageUrl: peca.imageUrl,
+      disponivel: peca.disponivel,
+    })
   }
 
   const handleShare = () => {
@@ -153,6 +180,24 @@ export default function PecaDetalhes() {
 
           {/* PRIMARY CTA: ENTRAR EM CONTATO */}
           <div className="cta-actions-group">
+            {user?.role !== 'PROPRIETARIO' && (
+              peca.disponivel ? (
+                inCart ? (
+                  <Link to="/cart" className="btn btn-ghost">
+                    <Check size={18} />
+                    No carrinho
+                  </Link>
+                ) : (
+                  <button type="button" className="btn btn-ghost" onClick={handleAddToCart}>
+                    <ShoppingCart size={18} />
+                    Adicionar ao carrinho
+                  </button>
+                )
+              ) : (
+                <span className="btn btn-ghost" aria-disabled="true">Peça indisponível</span>
+              )
+            )}
+
             <button
               type="button"
               className="btn btn-cyan-pill cta-contact-btn"

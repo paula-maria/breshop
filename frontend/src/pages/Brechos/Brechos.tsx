@@ -47,6 +47,10 @@ export default function Brechos() {
   const tamanho = searchParams.get('tamanho') || ''
   const condicao = searchParams.get('condicao') || ''
   const disponivel = searchParams.get('disponivel') === 'true'
+  const minPreco = searchParams.get('minPreco') || ''
+  const maxPreco = searchParams.get('maxPreco') || ''
+  const localizacao = searchParams.get('localizacao') || ''
+  const brechoFiltro = searchParams.get('brecho') || ''
 
   const fetchPage = useCallback(async (pageToLoad: number) => {
     const base = { page: pageToLoad, limit: PAGE_SIZE, q: debouncedQuery || undefined }
@@ -73,6 +77,10 @@ export default function Brechos() {
         tamanho: tamanho || undefined,
         condicao: condicao || undefined,
         disponivel: disponivel || undefined,
+        minPreco: minPreco || undefined,
+        maxPreco: maxPreco || undefined,
+        localizacao: localizacao || undefined,
+        brecho: brechoFiltro || undefined,
       },
     })
     const mapped: PecaItem[] = res.data.data.map((p: any) => ({
@@ -88,7 +96,7 @@ export default function Brechos() {
       imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
     }))
     return { items: mapped, totalPages: res.data.meta.totalPages, isBrecho: false as const }
-  }, [activeTab, cityParam, debouncedQuery, categoria, tipo, tamanho, condicao, disponivel])
+  }, [activeTab, cityParam, debouncedQuery, categoria, tipo, tamanho, condicao, disponivel, minPreco, maxPreco, localizacao, brechoFiltro])
 
   useEffect(() => {
     let cancelled = false

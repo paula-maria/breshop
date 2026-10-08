@@ -7,6 +7,7 @@ import BrechoDetalhes from './pages/BrechoDetalhes/BrechoDetalhes'
 import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
 import CadastroBrecho from './pages/CadastroBrecho/CadastroBrecho'
+import Cart from './pages/Cart/Cart'
 import NotFound from './pages/NotFound/NotFound'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
@@ -138,6 +139,15 @@ export default function App() {
                   <ClientProposals />
                 </ClientLayout>
               </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/cart"
+            element={
+              <PageLayout showSidebar={false}>
+                <Cart />
+              </PageLayout>
             }
           />
 

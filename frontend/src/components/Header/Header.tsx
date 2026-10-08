@@ -2,14 +2,18 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { getCart, subscribeToCart } from '../../utils/cart'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brechoDropdownOpen, setBrechoDropdownOpen] = useState(false)
   const [favoritesCount, setFavoritesCount] = useState(0)
+  const [cartCount, setCartCount] = useState(() => getCart().length)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
+
+  useEffect(() => subscribeToCart(() => setCartCount(getCart().length)), [])
 
   useEffect(() => {
     const updateCount = () => {
@@ -163,8 +167,13 @@ export default function Header() {
 
           {/* Carrinho: somente para clientes compradores */}
           {(!user || user.role === 'CLIENTE') && (
-            <Link to="/cart" style={{ color: 'var(--navy-dark)' }}>
+            <Link to="/cart" style={{ position: 'relative', color: 'var(--navy-dark)' }} aria-label="Carrinho">
               <ShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
+                  {cartCount}
+                </span>
+              )}
             </Link>
           )}
 

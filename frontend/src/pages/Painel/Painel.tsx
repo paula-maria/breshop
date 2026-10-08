@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Store, MapPin, Clock, Plus, X, ExternalLink, Trash2 } from 'lucide-react'
 import Toast, { type ToastType } from '../../components/Toast/Toast'
+import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS_POR_CATEGORIA, type Categoria } from '../../constants/pecas'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { api } from '../../services/api'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -19,7 +20,9 @@ type ItemDashboard = {
   preco: string
   tamanho: string
   categoria: string
+  tipo: string
   condicao: string
+  descricao: string
   status: 'DISPONÍVEL' | 'VENDIDO'
   imageUrl: string
 }
@@ -73,7 +76,9 @@ export default function Painel() {
             preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
             tamanho: p.tamanho,
             categoria: p.categoria,
+            tipo: p.tipo || '',
             condicao: p.condicao,
+            descricao: p.descricao || '',
             status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
             imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
           }))
@@ -98,7 +103,8 @@ export default function Painel() {
     nome: '',
     preco: '',
     tamanho: 'M',
-    categoria: 'Roupas',
+    categoria: 'Roupas' as string,
+    tipo: 'Camiseta',
     condicao: 'Seminovo',
     imageUrl: '',
     descricao: '',
@@ -205,9 +211,10 @@ export default function Painel() {
       preco: item.preco.replace('R$ ', '').replace('R$', '').trim(),
       tamanho: item.tamanho,
       categoria: item.categoria,
+      tipo: item.tipo,
       condicao: item.condicao,
       imageUrl: item.imageUrl,
-      descricao: '',
+      descricao: item.descricao,
     })
     setIsModalOpen(true)
   }
@@ -215,7 +222,7 @@ export default function Painel() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingItemId(null)
-    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', condicao: 'Seminovo', imageUrl: '', descricao: '' })
+    setNewItem({ nome: '', preco: '', tamanho: 'M', categoria: 'Roupas', tipo: 'Camiseta', condicao: 'Seminovo', imageUrl: '', descricao: '' })
   }
 
   const handleCreateItemSubmit = async (e: FormEvent) => {
@@ -232,6 +239,7 @@ export default function Painel() {
           preco: isNaN(numericPrice) ? 0 : numericPrice,
           tamanho: newItem.tamanho,
           categoria: newItem.categoria,
+          tipo: newItem.tipo,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
           fotos: newItem.imageUrl ? [newItem.imageUrl] : []
@@ -243,7 +251,9 @@ export default function Painel() {
           preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
           tamanho: p.tamanho,
           categoria: p.categoria,
+          tipo: p.tipo || '',
           condicao: p.condicao,
+          descricao: p.descricao || '',
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : i.imageUrl
         } : i))
         showToast('Peça atualizada com sucesso!', 'success')
@@ -254,6 +264,7 @@ export default function Painel() {
           preco: isNaN(numericPrice) ? 0 : numericPrice,
           tamanho: newItem.tamanho,
           categoria: newItem.categoria,
+          tipo: newItem.tipo,
           condicao: newItem.condicao,
           descricao: newItem.descricao,
           fotos: newItem.imageUrl ? [newItem.imageUrl] : []
@@ -265,7 +276,9 @@ export default function Painel() {
           preco: `R$ ${p.preco.toFixed(2).replace('.', ',')}`,
           tamanho: p.tamanho,
           categoria: p.categoria,
+          tipo: p.tipo || '',
           condicao: p.condicao,
+          descricao: p.descricao || '',
           status: p.disponivel ? 'DISPONÍVEL' : 'VENDIDO',
           imageUrl: p.fotos && p.fotos.length > 0 ? p.fotos[0] : ''
         }
@@ -613,53 +626,73 @@ export default function Painel() {
                       }))
                     }
                   >
-                    <option value="PP">PP</option>
-                    <option value="P">P</option>
-                    <option value="M">M</option>
-                    <option value="G">G</option>
-                    <option value="GG">GG</option>
-                    <option value="XG">XG</option>
-                    <option value="Único">Único</option>
+                    {TAMANHOS.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div className="form-row-2">
                 <div className="form-group">
-                  <label className="form-label">Categoria</label>
+                  <label className="form-label">Categoria *</label>
                   <select
                     className="form-input"
                     value={newItem.categoria}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const categoria = e.target.value as Categoria
                       setNewItem((prev) => ({
                         ...prev,
-                        categoria: e.target.value,
+                        categoria,
+                        tipo: TIPOS_POR_CATEGORIA[categoria].includes(prev.tipo)
+                          ? prev.tipo
+                          : TIPOS_POR_CATEGORIA[categoria][0],
                       }))
-                    }
+                    }}
                   >
-                    <option value="Roupas">Roupas</option>
-                    <option value="Calçados">Calçados</option>
-                    <option value="Acessórios">Acessórios</option>
+                    {CATEGORIAS.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Condição</label>
+                  <label className="form-label">Tipo de peça *</label>
+                  <select
+                    className="form-input"
+                    value={newItem.tipo}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, tipo: e.target.value }))}
+                  >
+                    {TIPOS_POR_CATEGORIA[newItem.categoria as Categoria].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label className="form-label">Condição *</label>
                   <select
                     className="form-input"
                     value={newItem.condicao}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({
-                        ...prev,
-                        condicao: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, condicao: e.target.value }))}
                   >
-                    <option value="Novo">Novo</option>
-                    <option value="Seminovo">Seminovo</option>
-                    <option value="Usado">Usado</option>
+                    {CONDICOES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Descrição</label>
+                <textarea
+                  className="form-input"
+                  rows={3}
+                  value={newItem.descricao}
+                  onChange={(e) => setNewItem((prev) => ({ ...prev, descricao: e.target.value }))}
+                />
               </div>
 
               <div className="form-group">

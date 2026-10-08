@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import './FilterSidebarDrawer.css'
 import { ChevronLeft, RotateCcw, Filter, X } from 'lucide-react'
+import { api } from '../../services/api'
+import { CATEGORIAS, CONDICOES, TAMANHOS, TIPOS } from '../../constants/pecas'
 
 export default function FilterSidebar() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [cidades, setCidades] = useState<string[]>([])
+
+  useEffect(() => {
+    api.get('/brechos/cidades').then((res) => setCidades(res.data)).catch(() => {})
+  }, [])
 
   // Helpers to deal with comma-separated values in URL
   const getArrayParam = (key: string) => {
@@ -126,7 +133,7 @@ export default function FilterSidebar() {
             <div className="filter-group">
               <h4 className="filter-group__label">CATEGORIA</h4>
               <div className="filter-group__list">
-                {['Roupas', 'Calçados', 'Acessórios'].map((cat) => (
+                {CATEGORIAS.map((cat) => (
                   <label key={cat} className="filter-checkbox">
                     <input
                       type="checkbox"
@@ -144,7 +151,7 @@ export default function FilterSidebar() {
             <div className="filter-group">
               <h4 className="filter-group__label">TIPO DE PEÇA</h4>
               <div className="filter-group__list">
-                {['Camiseta', 'Camisa', 'Calça', 'Vestido', 'Saia', 'Jaqueta', 'Tênis', 'Bolsa', 'Outros'].map((tipo) => (
+                {TIPOS.map((tipo) => (
                   <label key={tipo} className="filter-checkbox">
                     <input
                       type="checkbox"
@@ -162,7 +169,7 @@ export default function FilterSidebar() {
             <div className="filter-group">
               <h4 className="filter-group__label">TAMANHO</h4>
               <div className="filter-group__list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'].map((tam) => (
+                {TAMANHOS.map((tam) => (
                   <label key={tam} className="filter-checkbox">
                     <input
                       type="checkbox"
@@ -203,7 +210,7 @@ export default function FilterSidebar() {
             <div className="filter-group">
               <h4 className="filter-group__label">CONDIÇÃO</h4>
               <div className="filter-group__list">
-                {['Novo', 'Seminovo', 'Usado'].map((cond) => (
+                {CONDICOES.map((cond) => (
                   <label key={cond} className="filter-checkbox">
                     <input
                       type="checkbox"
@@ -226,9 +233,9 @@ export default function FilterSidebar() {
                 onChange={(e) => setSingleParam('localizacao', e.target.value)}
               >
                 <option value="">Todas as cidades</option>
-                <option value="Macapá">Macapá</option>
-                <option value="Santana">Santana</option>
-                <option value="Laranjal do Jari">Laranjal do Jari</option>
+                {cidades.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
             </div>
 
