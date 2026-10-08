@@ -203,6 +203,26 @@ Funcionalidades de filtros avançados, negociação de preços e visualização 
 
 ## Como Executar o Projeto
 
+Há duas formas de rodar o projeto: **com Docker (tudo de uma vez)** ou **manualmente** (modo desenvolvimento).
+
+### Opção A: Docker (frontend + backend + banco)
+
+Requer apenas [Docker](https://www.docker.com/) e Docker Compose. Na raiz do projeto:
+
+```bash
+docker compose up -d --build
+```
+
+Isso constrói uma única imagem (`Dockerfile` da raiz) contendo o frontend compilado e a API, e sobe também o PostgreSQL. As migrações do Prisma são aplicadas automaticamente na inicialização.
+
+- Aplicação (frontend + API): http://localhost:3333 (a API fica em `/api`)
+- Para parar: `docker compose down` (adicione `-v` para apagar também os dados do banco)
+- Antes de usar em produção, altere o `JWT_SECRET` no `docker-compose.yml`.
+
+> O banco deste compose não expõe a porta 5432 no host. Para desenvolvimento manual (Opção B), use o `docker-compose.yml` da pasta `backend/`.
+
+### Opção B: Manual (desenvolvimento)
+
 Siga o passo a passo abaixo para rodar o projeto localmente em sua máquina.
 
 ### Pré-requisitos
