@@ -227,6 +227,21 @@ Logins de teste (senha `123456`): `cliente@teste.com` (também `cliente2@` e `cl
 
 > O mesmo `docker-compose.yml` serve para o desenvolvimento manual (Opção B): `docker compose up -d db` sobe só o banco, acessível em `localhost:5432`.
 
+### Desenvolvimento com Docker e atualização automática
+
+Para desenvolver sem reconstruir a imagem a cada alteração, use o Compose de desenvolvimento:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Essa configuração monta os diretórios do frontend e backend nos containers. O Vite atualiza o navegador quando arquivos do frontend mudam, e o backend reinicia automaticamente quando arquivos da API mudam.
+
+- Frontend: http://localhost:5173
+- API: http://localhost:3333/api
+- Para parar: `Ctrl+C` ou `docker compose -f docker-compose.yml -f docker-compose.dev.yml down`
+- Alterações em `package.json` ou nos Dockerfiles exigem uma nova construção com `up --build`; alterações normais de código não.
+
 ### Opção B: Manual (desenvolvimento)
 
 Siga o passo a passo abaixo para rodar o projeto localmente em sua máquina.
@@ -324,4 +339,3 @@ A documentação do projeto está organizada em:
 * `README.md` — contexto, problema, objetivo, tutorial de execução e visão geral do projeto;
 * `docs/requisitos.md` — especificação dos requisitos funcionais e não funcionais;
 * `docs/user-stories.md` — temas, épicos e User Stories.
-

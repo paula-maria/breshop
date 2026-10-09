@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: "no"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_URL: http://localhost:3333/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: "no"

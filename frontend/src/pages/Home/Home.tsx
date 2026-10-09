@@ -194,24 +194,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA PARA PROPRIETÁRIOS */}
-      <section className="owner-cta-section">
-        <div className="owner-cta-card">
-          <h2 className="owner-cta-title">
-            TEM UM BRECHÓ? DIVULGUE SUAS PEÇAS
-          </h2>
-          <p className="owner-cta-subtitle">
-            Cadastre seu brechó e alcance novos compradores em todo o Brasil.
-          </p>
-          <button
-            type="button"
-            className="btn btn-cyan-pill owner-cta-btn"
-            onClick={() => navigate('/cadastro')}
-          >
-            Cadastrar brechó
-          </button>
-        </div>
-      </section>
     </div>
     </PageLayout>
   )
