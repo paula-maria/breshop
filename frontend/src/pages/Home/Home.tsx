@@ -5,6 +5,14 @@ import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import PageLayout from '../../components/PageLayout/PageLayout'
 import { api } from '../../services/api'
+import { Shirt, Footprints, Watch, ShoppingBag } from 'lucide-react'
+
+const slideIcons: Record<string, typeof Shirt> = {
+  Roupas: Shirt,
+  Calçados: Footprints,
+  Acessórios: Watch,
+  Bolsas: ShoppingBag,
+}
 
 const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
 
@@ -114,11 +122,28 @@ export default function Home() {
         <div className="hero-section__image-col">
           {heroSlides.length > 0 && currentSlide ? (
             <Link to={`/pecas/${currentSlide.id}`} className="hero-carousel__slide">
-              <img
-                src={currentSlide.imageUrl}
-                alt={currentSlide.nome}
-                className="hero-carousel__img"
-              />
+              {(() => {
+                const SlideIcon = slideIcons[currentSlide.categoria ?? ''] ?? Shirt
+                return (
+                  <SlideIcon
+                    className="hero-carousel__bg-icon"
+                    size={220}
+                    strokeWidth={1}
+                    aria-hidden="true"
+                  />
+                )
+              })()}
+              {currentSlide.imageUrl && (
+                <img
+                  key={currentSlide.id}
+                  src={currentSlide.imageUrl}
+                  alt={currentSlide.nome}
+                  className="hero-carousel__img"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              )}
               <div className="hero-carousel__info">
                 <span className="hero-carousel__brecho">{currentSlide.brecho}</span>
                 <span className="hero-carousel__nome">{currentSlide.nome}</span>
