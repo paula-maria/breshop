@@ -9,6 +9,7 @@ import PecaDetalhes from './pages/PecaDetalhes/PecaDetalhes'
 import Painel from './pages/Painel/Painel'
 import CadastroBrecho from './pages/CadastroBrecho/CadastroBrecho'
 import Cart from './pages/Cart/Cart'
+import Favoritos from './pages/Favoritos/Favoritos'
 import NotFound from './pages/NotFound/NotFound'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
@@ -73,6 +74,14 @@ export default function App() {
             element={
               <PageLayout showSidebar={true}>
                 <PecaDetalhes />
+              </PageLayout>
+            }
+          />
+          <Route
+            path="/favoritos"
+            element={
+              <PageLayout showSidebar={false}>
+                <Favoritos />
               </PageLayout>
             }
           />

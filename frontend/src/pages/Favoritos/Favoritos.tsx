@@ -9,9 +9,12 @@ export default function Favoritos() {
 
   useEffect(() => {
     const loadFavorites = () => {
-      const saved = localStorage.getItem('breshop_favoritos')
-      if (saved) {
-        setFavorites(JSON.parse(saved))
+      try {
+        const saved = localStorage.getItem('breshop_favoritos')
+        const parsed: unknown = saved ? JSON.parse(saved) : []
+        setFavorites(Array.isArray(parsed) ? parsed : [])
+      } catch {
+        setFavorites([])
       }
     }
 
@@ -26,7 +29,11 @@ export default function Favoritos() {
     <div className="favoritos-page">
       <div className="favoritos-header">
         <h1 className="favoritos-title">Meus Favoritos</h1>
-        <p className="favoritos-subtitle">As peças que você mais amou, todas em um só lugar.</p>
+        <p className="favoritos-subtitle">
+          {favorites.length > 0
+            ? `${favorites.length} peça${favorites.length === 1 ? '' : 's'} salva${favorites.length === 1 ? '' : 's'} para você encontrar depois.`
+            : 'As peças que você mais amou, todas em um só lugar.'}
+        </p>
       </div>
 
       {favorites.length === 0 ? (
@@ -41,7 +48,7 @@ export default function Favoritos() {
           </Link>
         </div>
       ) : (
-        <div className="product-grid">
+        <div className="favoritos-grid">
           {favorites.map((item) => (
             <CardPeca key={item.id} {...item} />
           ))}
