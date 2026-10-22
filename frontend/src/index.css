@@ -166,14 +166,16 @@ body {
 .site-header__container {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1.1rem 3rem;
+  padding: 1rem 3rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .site-header__logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
   text-decoration: none;
 }
 
@@ -181,13 +183,15 @@ body {
   font-size: 1.4rem;
   font-weight: 900;
   letter-spacing: -0.01em;
-  color: var(--navy-dark);
+  color: var(--cyan-primary);
 }
 
 .site-header__nav {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: center;
+  flex: 1;
+  gap: 2.25rem;
 }
 
 .site-header__link {
@@ -312,7 +316,93 @@ body {
 .site-header__actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  flex-shrink: 0;
+  gap: 1.5rem;
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: clamp(200px, 22vw, 320px);
+  padding: 0.65rem 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.header-search:focus-within {
+  border-color: var(--cyan-primary);
+}
+
+.header-search__btn {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.header-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--navy-dark);
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--navy-dark);
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.header-icon-btn:hover {
+  background: #e3f1e6;
+  color: var(--cyan-primary);
+}
+
+.header-icon-btn--danger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.header-icon-btn__badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 999px;
 }
 
 .site-header__login-link {

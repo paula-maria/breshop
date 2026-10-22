@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Store, MapPin, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCart, subscribeToCart } from '../../utils/cart'
@@ -12,6 +12,8 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(() => getCart().length)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
+  const navigate = useNavigate()
+  const [searchText, setSearchText] = useState('')
 
   useEffect(() => subscribeToCart(() => setCartCount(getCart().length)), [])
 
@@ -45,17 +47,22 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchText.trim()
+    if (!q) return
+    navigate(`/brechos?view=pecas&q=${encodeURIComponent(q)}`)
+  }
+
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev)
 
   return (
     <header className="site-header">
       <div className="site-header__container">
         {/* LOGO */}
-        <div style={{ flex: 1, display: 'flex' }}>
-          <Link to="/" className="site-header__logo" aria-label="Home BRESHOP" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span className="site-header__logo-text" style={{ color: 'var(--cyan-primary)' }}>BRESHOP</span>
-          </Link>
-        </div>
+        <Link to="/" className="site-header__logo" aria-label="Home BRESHOP">
+          <span className="site-header__logo-text">BRESHOP</span>
+        </Link>
 
         {/* CENTER NAVIGATION */}
         <nav className="site-header__nav" aria-label="Navegação principal">
@@ -126,56 +133,59 @@ export default function Header() {
         </nav>
 
         {/* RIGHT ACTIONS */}
-        <div className="site-header__actions" style={{ flex: 1, justifyContent: 'flex-end' }}>
-          
-          {/* Header Search (Desktop) */}
-          <div className="header-search hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', background: '#f5f5f5', borderRadius: '4px', padding: '10px 16px', minWidth: '350px' }}>
-            <span style={{ color: '#8a8a8a', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
+        <div className="site-header__actions">
+          <form className="header-search hide-on-mobile" role="search" onSubmit={handleSearch}>
+            <button type="submit" className="header-search__btn" aria-label="Buscar">
               <Search size={16} />
-            </span>
-            <input type="text" placeholder="Buscar peças..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', width: '100%' }} />
-          </div>
+            </button>
+            <input
+              type="text"
+              placeholder="Buscar peças..."
+              aria-label="Buscar peças"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </form>
 
-          <Link to="/favoritos" className="header-favorites-btn hide-on-mobile" style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'var(--color-text)' }} aria-label="Favoritos">
-            <Heart size={20} />
-            {favoritesCount > 0 && (
-              <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
-                {favoritesCount}
-              </span>
-            )}
-          </Link>
+          <div className="header-icons">
+            <Link to="/favoritos" className="header-icon-btn hide-on-mobile" aria-label="Favoritos">
+              <Heart size={20} />
+              {favoritesCount > 0 && <span className="header-icon-btn__badge">{favoritesCount}</span>}
+            </Link>
 
-          {user ? (
-            <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'} style={{ color: 'var(--navy-dark)' }}>
+            {user ? (
+              <>
+                <Link
+                  to={user.role === 'PROPRIETARIO' ? '/painel' : '/cliente'}
+                  className="header-icon-btn hide-on-mobile"
+                  aria-label="Minha conta"
+                >
+                  <User size={20} />
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="header-icon-btn header-icon-btn--danger hide-on-mobile"
+                  title="Sair"
+                  aria-label="Sair"
+                >
+                  <LogOut size={20} />
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="header-icon-btn hide-on-mobile" aria-label="Entrar">
                 <User size={20} />
               </Link>
-              <button 
-                type="button" 
-                onClick={logout} 
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-danger)' }}
-                title="Sair"
-              >
-                <LogOut size={18} />
-              </button>
-            </div>
-          ) : (
-            <Link to="/login" className="hide-on-mobile" style={{ color: 'var(--navy-dark)' }}>
-              <User size={20} />
-            </Link>
-          )}
+            )}
 
-          {/* Carrinho: somente para clientes compradores */}
-          {(!user || user.role === 'CLIENTE') && (
-            <Link to="/cart" style={{ position: 'relative', color: 'var(--navy-dark)' }} aria-label="Carrinho">
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '999px' }}>
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          )}
+            {/* Carrinho: somente para clientes compradores */}
+            {(!user || user.role === 'CLIENTE') && (
+              <Link to="/cart" className="header-icon-btn" aria-label="Carrinho">
+                <ShoppingCart size={20} />
+                {cartCount > 0 && <span className="header-icon-btn__badge">{cartCount}</span>}
+              </Link>
+            )}
+          </div>
 
           {/* MOBILE TOGGLE */}
           <button

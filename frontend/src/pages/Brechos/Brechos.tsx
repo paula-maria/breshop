@@ -30,6 +30,12 @@ export default function Brechos() {
   // Determine active view tab: 'feminino' | 'masculino' | 'todas' | 'lojas'
   const activeTab = catParam || (viewParam === 'pecas' ? 'todas' : 'lojas')
 
+  // Mantém o campo sincronizado quando a busca vem da header
+  useEffect(() => {
+    setSearchQuery(queryParam)
+    setDebouncedQuery(queryParam)
+  }, [queryParam])
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery), 300)
     return () => clearTimeout(t)
