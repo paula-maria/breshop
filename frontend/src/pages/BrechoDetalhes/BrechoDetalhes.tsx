@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Star, MapPin, Clock, Camera, Truck, Store, Handshake, MessageCircle, Map } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import { api } from '../../services/api'

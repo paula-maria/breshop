@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { api } from '../services/api'
 
 type Role = 'CLIENTE' | 'PROPRIETARIO'
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await api.get('/auth/me')
         setUser(response.data.user)
-      } catch (error) {
+      } catch {
         setUser(null)
       } finally {
         setIsLoading(false)

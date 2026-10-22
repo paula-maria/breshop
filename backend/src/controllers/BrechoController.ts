@@ -120,7 +120,7 @@ export class BrechoController {
 
   async getById(req: Request, res: Response) {
     try {
-      const { id } = req.params
+      const id = String(req.params.id)
 
       const brecho = await prisma.brecho.findUnique({
         where: { id },

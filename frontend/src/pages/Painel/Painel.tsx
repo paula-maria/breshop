@@ -29,6 +29,7 @@ type ItemDashboard = {
 }
 
 type StoreInfo = {
+  id: string | number
   nome: string
   descricao?: string
   logoUrl?: string
@@ -149,7 +150,7 @@ export default function Painel() {
         )
       )
       showToast(`Status alterado para ${newStatus}`, 'success')
-    } catch (err) {
+    } catch {
       showToast('Erro ao atualizar status', 'error')
     }
   }
@@ -177,7 +178,7 @@ export default function Painel() {
         await api.delete(`/pecas/${confirmModal.itemId}`)
         setItems((prev) => prev.filter((item) => item.id !== confirmModal.itemId))
         showToast('Peça excluída do catálogo.', 'success')
-      } catch (err) {
+      } catch {
         showToast('Erro ao excluir peça.', 'error')
       }
     }
@@ -200,7 +201,7 @@ export default function Painel() {
       })
       setNewItem(prev => ({ ...prev, imageUrl: res.data.url }))
       showToast('Imagem carregada com sucesso!', 'success')
-    } catch (err) {
+    } catch {
       showToast('Erro ao enviar imagem', 'error')
     } finally {
       setIsUploading(false)
@@ -294,7 +295,7 @@ export default function Painel() {
         showToast('Peça cadastrada com sucesso!', 'success')
       }
       handleCloseModal()
-    } catch (err) {
+    } catch {
       showToast(editingItemId ? 'Erro ao atualizar peça.' : 'Erro ao cadastrar peça.', 'error')
     }
   }
@@ -551,19 +552,19 @@ export default function Painel() {
               </div>
               <div>
                 <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>FAZ ENTREGA?</strong>
-                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.entrega ? 600 : 400, color: storeData.entrega ? '#10b981' : '#64748b' }}>
+                <p style={{ marginTop: '6px', fontWeight: storeData.entrega ? 600 : 400, color: storeData.entrega ? '#10b981' : '#64748b' }}>
                   {storeData.entrega ? 'Sim' : 'Não'}
                 </p>
               </div>
               <div>
                 <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>PERMITE RETIRADA?</strong>
-                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.retirada ? 600 : 400, color: storeData.retirada ? '#10b981' : '#64748b' }}>
+                <p style={{ marginTop: '6px', fontWeight: storeData.retirada ? 600 : 400, color: storeData.retirada ? '#10b981' : '#64748b' }}>
                   {storeData.retirada ? 'Sim' : 'Não'}
                 </p>
               </div>
               <div>
                 <strong style={{ color: '#64748b', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ACEITA NEGOCIAÇÃO?</strong>
-                <p style={{ marginTop: '6px', color: '#334155', fontWeight: storeData.negociacao ? 600 : 400, color: storeData.negociacao ? '#10b981' : '#64748b' }}>
+                <p style={{ marginTop: '6px', fontWeight: storeData.negociacao ? 600 : 400, color: storeData.negociacao ? '#10b981' : '#64748b' }}>
                   {storeData.negociacao ? 'Sim' : 'Não'}
                 </p>
               </div>

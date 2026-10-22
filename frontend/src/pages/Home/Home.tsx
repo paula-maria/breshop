@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import SearchBar from '../../components/SearchBar/SearchBar'
+import { Link } from 'react-router-dom'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
 import CardBrecho, { type CardBrechoProps } from '../../components/CardBrecho/CardBrecho'
 import PageLayout from '../../components/PageLayout/PageLayout'
@@ -14,10 +13,7 @@ const slideIcons: Record<string, typeof Shirt> = {
   Bolsas: ShoppingBag,
 }
 
-const trendingTags = ['Jaquetas 90s', 'Bolsas Y2K', 'Jeans vintage']
-
 export default function Home() {
-  const navigate = useNavigate()
   const [featuredPecas, setFeaturedPecas] = useState<CardPecaProps[]>([])
   const [exploreBrechos, setExploreBrechos] = useState<(CardBrechoProps & { tone?: 'teal' | 'navy' | 'cyan' })[]>([])
   const [totals, setTotals] = useState({ pecas: 0, brechos: 0 })
@@ -77,16 +73,6 @@ export default function Home() {
     timerRef.current = setInterval(() => {
       setCarouselIndex((prev) => (prev + 1) % heroSlides.length)
     }, 3500)
-  }
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      navigate(`/brechos?q=${encodeURIComponent(query)}`)
-    }
-  }
-
-  const handleTagClick = (tag: string) => {
-    navigate(`/brechos?q=${encodeURIComponent(tag)}`)
   }
 
   const filteredPecas = featuredPecas.slice(0, 4)

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Store, MapPin, Sparkles, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
+import { Store, MapPin, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCart, subscribeToCart } from '../../utils/cart'
 

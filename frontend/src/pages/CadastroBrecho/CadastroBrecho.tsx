@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
 import { Store } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
 
 const brechoSchema = z.object({
   nome: z.string().min(2, 'O nome é obrigatório'),
@@ -69,8 +68,7 @@ export default function CadastroBrecho() {
   const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
   const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [logoUploading, setLogoUploading] = useState(false)
+    const [logoUploading, setLogoUploading] = useState(false)
   const [capaUploading, setCapaUploading] = useState(false)
   const [logoPreview, setLogoPreview] = useState('')
   const [capaPreview, setCapaPreview] = useState('')
@@ -93,7 +91,7 @@ export default function CadastroBrecho() {
     setValue,
     reset,
     formState: { errors, isSubmitting }
-  } = useForm<BrechoFormData>({
+  } = useForm<z.input<typeof brechoSchema>, unknown, BrechoFormData>({
     resolver: zodResolver(brechoSchema),
     defaultValues: {
       entrega: false,
@@ -145,7 +143,9 @@ export default function CadastroBrecho() {
                 }
               })
               setHorariosObj(newObj)
-            } catch (e) {}
+            } catch {
+            // ignora JSON inválido
+          }
           }
           
           if (sanitizedData.whatsapp) sanitizedData.whatsapp = maskPhone(sanitizedData.whatsapp)
@@ -156,10 +156,8 @@ export default function CadastroBrecho() {
 
           reset(sanitizedData)
         }
-      } catch (err: any) {
+      } catch {
         // Se 404, não tem loja ainda
-      } finally {
-        setIsLoading(false)
       }
     }
     fetchStore()
@@ -177,7 +175,9 @@ export default function CadastroBrecho() {
           setValue('cidade', data.localidade, { shouldValidate: true })
           setValue('estado', data.uf, { shouldValidate: true })
         }
-      } catch (err) {}
+      } catch {
+        // ignora falha na consulta de CEP
+      }
     }
   }
 

@@ -149,13 +149,13 @@ export class PecaController {
 
   async update(req: Request, res: Response) {
     try {
-      const { id } = req.params
+      const id = String(req.params.id)
       if (!req.user || req.user.role !== 'PROPRIETARIO') {
         res.status(403).json({ error: 'Acesso negado' })
         return
       }
 
-      const data = updatePecaSchema.parse(req.body)
+      const data: z.infer<typeof updatePecaSchema> & { disponivel?: boolean } = updatePecaSchema.parse(req.body)
 
       const peca = await prisma.peca.findUnique({
         where: { id },
@@ -192,7 +192,7 @@ export class PecaController {
 
   async delete(req: Request, res: Response) {
     try {
-      const { id } = req.params
+      const id = String(req.params.id)
       if (!req.user || req.user.role !== 'PROPRIETARIO') {
         res.status(403).json({ error: 'Acesso negado' })
         return
