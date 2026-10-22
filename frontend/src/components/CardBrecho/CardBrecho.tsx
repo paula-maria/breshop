@@ -29,7 +29,6 @@ export default function CardBrecho({
             <div className="banner-icon-badge">
               <Store size={28} />
             </div>
-            <span className="banner-store-tag">{nome.toUpperCase()}</span>
           </div>
         )}
       </div>

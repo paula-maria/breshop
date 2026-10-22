@@ -1,25 +1,22 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../services/api'
+import { Shirt, Footprints, Watch, User, UserRound, Baby, ShoppingBag, Tag } from 'lucide-react'
 import './Categorias.css'
-
-type Pec = { categoria: string; tipo?: string | null; publico?: string | null; fotos?: string[] }
 
 type CategoriaCard = {
   nome: string
   query: string
-  match: (p: Pec) => boolean
+  Icon: typeof Shirt
 }
 
 const CARDS: CategoriaCard[] = [
-  { nome: 'Roupas', query: 'categoria=Roupas', match: (p) => p.categoria === 'Roupas' },
-  { nome: 'Calçados', query: 'categoria=Calçados', match: (p) => p.categoria === 'Calçados' },
-  { nome: 'Acessórios', query: 'categoria=Acessórios', match: (p) => p.categoria === 'Acessórios' },
-  { nome: 'Feminino', query: 'publico=Feminino', match: (p) => p.publico === 'Feminino' },
-  { nome: 'Masculino', query: 'publico=Masculino', match: (p) => p.publico === 'Masculino' },
-  { nome: 'Infantil', query: 'publico=Infantil', match: (p) => p.publico === 'Infantil' },
-  { nome: 'Bolsas', query: 'tipo=Bolsa', match: (p) => p.tipo === 'Bolsa' },
-  { nome: 'Outros', query: 'tipo=Outros', match: (p) => p.tipo === 'Outros' },
+  { nome: 'Roupas', query: 'categoria=Roupas', Icon: Shirt },
+  { nome: 'Calçados', query: 'categoria=Calçados', Icon: Footprints },
+  { nome: 'Acessórios', query: 'categoria=Acessórios', Icon: Watch },
+  { nome: 'Feminino', query: 'publico=Feminino', Icon: UserRound },
+  { nome: 'Masculino', query: 'publico=Masculino', Icon: User },
+  { nome: 'Infantil', query: 'publico=Infantil', Icon: Baby },
+  { nome: 'Bolsas', query: 'tipo=Bolsa', Icon: ShoppingBag },
+  { nome: 'Outros', query: 'tipo=Outros', Icon: Tag },
 ]
 
 const EXPLORAR = [
@@ -29,15 +26,6 @@ const EXPLORAR = [
 ]
 
 export default function Categorias() {
-  const [pecas, setPecas] = useState<Pec[]>([])
-
-  // Usa a foto de uma peça real de cada categoria como capa do card
-  useEffect(() => {
-    api.get('/pecas', { params: { limit: 100 } })
-      .then((res) => setPecas(res.data.data))
-      .catch(() => {})
-  }, [])
-
   return (
     <div className="categorias-page">
       <header className="categorias-page__header">
@@ -47,11 +35,10 @@ export default function Categorias() {
 
       <div className="categorias-grid">
         {CARDS.map((card) => {
-          const foto = pecas.find((p) => card.match(p) && p.fotos && p.fotos.length > 0)?.fotos?.[0]
+          const { Icon } = card
           return (
             <Link key={card.nome} to={`/brechos?view=pecas&${card.query}`} className="categoria-card">
-              {foto && <img src={foto} alt={card.nome} loading="lazy" />}
-              <span className="categoria-card__overlay" />
+              <Icon className="categoria-card__icon" size={48} strokeWidth={1.5} aria-hidden="true" />
               <span className="categoria-card__name">{card.nome}</span>
             </Link>
           )
