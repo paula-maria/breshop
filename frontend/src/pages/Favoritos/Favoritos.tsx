@@ -2,28 +2,24 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HeartCrack, ShoppingBag } from 'lucide-react'
 import CardPeca, { type CardPecaProps } from '../../components/CardPeca/CardPeca'
+import { useAuth } from '../../contexts/AuthContext'
+import { getFavorites, subscribeToFavorites } from '../../utils/favorites'
 import './Favoritos.css'
 
 export default function Favoritos() {
+  const { user } = useAuth()
   const [favorites, setFavorites] = useState<CardPecaProps[]>([])
 
   useEffect(() => {
     const loadFavorites = () => {
-      try {
-        const saved = localStorage.getItem('breshop_favoritos')
-        const parsed: unknown = saved ? JSON.parse(saved) : []
-        setFavorites(Array.isArray(parsed) ? parsed : [])
-      } catch {
-        setFavorites([])
-      }
+      setFavorites(user?.role === 'CLIENTE' ? getFavorites(user.id) : [])
     }
 
     loadFavorites()
 
     // Listen to updates from other tabs or components
-    window.addEventListener('favoritesUpdated', loadFavorites)
-    return () => window.removeEventListener('favoritesUpdated', loadFavorites)
-  }, [])
+    return subscribeToFavorites(loadFavorites)
+  }, [user?.id, user?.role])
 
   return (
     <div className="favoritos-page">

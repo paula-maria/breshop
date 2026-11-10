@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Store, MapPin, ChevronDown, Menu, X, Heart, LogOut, User, ShoppingCart, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCart, subscribeToCart } from '../../utils/cart'
+import { getFavorites, subscribeToFavorites } from '../../utils/favorites'
 
 export default function Header() {
   const { user, logout } = useAuth()
@@ -19,17 +20,11 @@ export default function Header() {
 
   useEffect(() => {
     const updateCount = () => {
-      const saved = localStorage.getItem('breshop_favoritos')
-      if (saved) {
-        setFavoritesCount(JSON.parse(saved).length)
-      } else {
-        setFavoritesCount(0)
-      }
+      setFavoritesCount(user?.role === 'CLIENTE' ? getFavorites(user.id).length : 0)
     }
     updateCount()
-    window.addEventListener('favoritesUpdated', updateCount)
-    return () => window.removeEventListener('favoritesUpdated', updateCount)
-  }, [])
+    return subscribeToFavorites(updateCount)
+  }, [user?.id, user?.role])
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
@@ -148,10 +143,12 @@ export default function Header() {
           </form>
 
           <div className="header-icons">
-            <Link to="/favoritos" className="header-icon-btn hide-on-mobile" aria-label="Favoritos">
-              <Heart size={20} />
-              {favoritesCount > 0 && <span className="header-icon-btn__badge">{favoritesCount}</span>}
-            </Link>
+            {user?.role !== 'PROPRIETARIO' && (
+              <Link to="/favoritos" className="header-icon-btn hide-on-mobile" aria-label="Favoritos">
+                <Heart size={20} />
+                {favoritesCount > 0 && <span className="header-icon-btn__badge">{favoritesCount}</span>}
+              </Link>
+            )}
 
             {user ? (
               <>
@@ -235,14 +232,16 @@ export default function Header() {
             Todos os Brechós
           </Link>
 
-          <Link
-            to="/favoritos"
-            className="site-header__mobile-link"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)' }}
-          >
-            <Heart size={18} /> Meus Favoritos
-          </Link>
+          {user?.role !== 'PROPRIETARIO' && (
+            <Link
+              to="/favoritos"
+              className="site-header__mobile-link"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)' }}
+            >
+              <Heart size={18} /> Meus Favoritos
+            </Link>
+          )}
 
           <div className="site-header__mobile-actions">
             {user ? (

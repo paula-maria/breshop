@@ -80,9 +80,11 @@ export default function App() {
           <Route
             path="/favoritos"
             element={
-              <PageLayout showSidebar={false}>
-                <Favoritos />
-              </PageLayout>
+              <ProtectedRoute requiredRole="CLIENTE">
+                <PageLayout showSidebar={false}>
+                  <Favoritos />
+                </PageLayout>
+              </ProtectedRoute>
             }
           />
 

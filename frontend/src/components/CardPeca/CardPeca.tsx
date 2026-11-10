@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { getFavorites, toggleFavorite } from '../../utils/favorites'
 
 export type CardPecaProps = {
   id: string | number
@@ -25,32 +27,19 @@ export default function CardPeca({
   statusTag = 'DISPONÍVEL',
   imageUrl,
 }: CardPecaProps) {
-  const [liked, setLiked] = useState(() => {
-    const saved = localStorage.getItem('breshop_favoritos')
-    if (saved) {
-      const parsed = JSON.parse(saved)
-      return parsed.some((item: any) => item.id === id)
-    }
-    return false
-  })
+  const { user, isLoading } = useAuth()
+  const [liked, setLiked] = useState(false)
+
+  useEffect(() => {
+    setLiked(user?.role === 'CLIENTE' && getFavorites(user.id).some((item) => String(item.id) === String(id)))
+  }, [id, user?.id, user?.role])
 
   const toggleLike = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    const newLiked = !liked
+    if (isLoading || user?.role !== 'CLIENTE') return
+    const newLiked = toggleFavorite(user.id, { id, nome, brecho, preco, tamanho, categoria, condicao, statusTag, imageUrl })
     setLiked(newLiked)
-
-    const saved = localStorage.getItem('breshop_favoritos')
-    let favorites = saved ? JSON.parse(saved) : []
-
-    if (newLiked) {
-      favorites.push({ id, nome, brecho, preco, tamanho, categoria, condicao, statusTag, imageUrl })
-    } else {
-      favorites = favorites.filter((item: any) => item.id !== id)
-    }
-
-    localStorage.setItem('breshop_favoritos', JSON.stringify(favorites))
-    window.dispatchEvent(new Event('favoritesUpdated'))
   }
 
   return (
@@ -80,18 +69,18 @@ export default function CardPeca({
         )}
 
         {/* FLOATING HEART ICON */}
-        <button
+        {user?.role === 'CLIENTE' && !isLoading && <button
           type="button"
           className={`featured-card__heart-btn ${liked ? 'is-liked' : ''}`}
           onClick={toggleLike}
-          aria-label="Adicionar aos favoritos"
+          aria-label={liked ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
         >
           <Heart
             size={20}
             fill={liked ? '#ef4444' : 'none'}
             stroke={liked ? '#ef4444' : '#1e293b'}
           />
-        </button>
+        </button>}
       </div>
 
       <div className="featured-card__content">

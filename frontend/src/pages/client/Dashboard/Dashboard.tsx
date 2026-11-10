@@ -4,12 +4,19 @@ import { Heart, MessageCircle, HandCoins } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api } from '../../../services/api'
 import CardPeca, { type CardPecaProps } from '../../../components/CardPeca/CardPeca'
+import { getFavorites, subscribeToFavorites } from '../../../utils/favorites'
 import '../../../components/ClientLayout/ClientLayout.css'
 
 export default function ClientDashboard() {
   const { user } = useAuth()
   const [recentPecas, setRecentPecas] = useState<CardPecaProps[]>([])
-  const favoritesCount = JSON.parse(localStorage.getItem('breshop_favoritos') || '[]').length
+  const [favoritesCount, setFavoritesCount] = useState(0)
+
+  useEffect(() => {
+    const updateCount = () => setFavoritesCount(getFavorites(user?.id).length)
+    updateCount()
+    return subscribeToFavorites(updateCount)
+  }, [user?.id])
 
   useEffect(() => {
     api.get('/pecas', { params: { limit: 4 } }).then((res) => {

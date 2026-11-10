@@ -2,19 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CardPeca, { type CardPecaProps } from '../../../components/CardPeca/CardPeca'
 import { Heart, ShoppingBag } from 'lucide-react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { getFavorites, subscribeToFavorites } from '../../../utils/favorites'
 
 export default function ClientFavorites() {
+  const { user } = useAuth()
   const [favorites, setFavorites] = useState<CardPecaProps[]>([])
 
   useEffect(() => {
     const load = () => {
-      const saved = localStorage.getItem('breshop_favoritos')
-      setFavorites(saved ? JSON.parse(saved) : [])
+      setFavorites(user?.role === 'CLIENTE' ? getFavorites(user.id) : [])
     }
     load()
-    window.addEventListener('favoritesUpdated', load)
-    return () => window.removeEventListener('favoritesUpdated', load)
-  }, [])
+    return subscribeToFavorites(load)
+  }, [user?.id, user?.role])
 
   return (
     <div>
