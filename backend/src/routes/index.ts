@@ -4,6 +4,7 @@ import { AuthController } from '../controllers/AuthController'
 import { authMiddleware } from '../middlewares/authMiddleware'
 import { BrechoController } from '../controllers/BrechoController'
 import { PecaController } from '../controllers/PecaController'
+import { PedidoController } from '../controllers/PedidoController'
 import { uploadMiddleware } from '../middlewares/uploadMiddleware'
 
 const routes = Router()
@@ -11,6 +12,7 @@ const healthController = new HealthController()
 const authController = new AuthController()
 const brechoController = new BrechoController()
 const pecaController = new PecaController()
+const pedidoController = new PedidoController()
 
 routes.get('/health', healthController.check.bind(healthController))
 
@@ -37,6 +39,10 @@ routes.put('/pecas/:id', authMiddleware, pecaController.update.bind(pecaControll
 routes.delete('/pecas/:id', authMiddleware, pecaController.delete.bind(pecaController))
 routes.get('/pecas', pecaController.list.bind(pecaController))
 routes.get('/pecas/:id', pecaController.getById.bind(pecaController))
+
+// Pedidos e Pix demonstrativo
+routes.post('/pedidos', authMiddleware, pedidoController.criar.bind(pedidoController))
+routes.post('/pedidos/:id/pagamento/simular', authMiddleware, pedidoController.simularPagamento.bind(pedidoController))
 
 // Rota genérica de Upload
 routes.post('/upload', authMiddleware, uploadMiddleware.single('file'), (req, res) => {

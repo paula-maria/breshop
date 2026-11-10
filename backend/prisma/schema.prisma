@@ -12,6 +12,18 @@ enum Role {
   PROPRIETARIO
 }
 
+enum StatusPedido {
+  PENDENTE
+  PAGO
+  CANCELADO
+}
+
+enum StatusPagamento {
+  PENDENTE
+  APROVADO
+  RECUSADO
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -27,6 +39,7 @@ model User {
   favoritos Favorito[]
   avaliacoes Avaliacao[]
   propostas Proposta[]
+  pedidos   Pedido[]
 }
 
 model Brecho {
@@ -94,6 +107,7 @@ model Peca {
   chats       Chat[]
   favoritos   Favorito[]
   propostas   Proposta[]
+  itensPedido ItemPedido[]
 }
 
 model Chat {
@@ -170,4 +184,40 @@ model Avaliacao {
   createdAt DateTime @default(now())
 
   @@unique([userId, brechoId])
+}
+
+model Pedido {
+  id          String       @id @default(uuid())
+  status      StatusPedido @default(PENDENTE)
+  totalCentavos Int
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  itens       ItemPedido[]
+  pagamento  Pagamento?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ItemPedido {
+  id             String @id @default(uuid())
+  pedidoId       String
+  pedido         Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  pecaId         String
+  peca           Peca   @relation(fields: [pecaId], references: [id])
+  precoCentavos  Int
+
+  @@unique([pedidoId, pecaId])
+}
+
+model Pagamento {
+  id            String          @id @default(uuid())
+  pedidoId      String          @unique
+  pedido        Pedido          @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  metodo        String          @default("PIX_DEMO")
+  status        StatusPagamento @default(PENDENTE)
+  valorCentavos Int
+  codigoPix     String
+  qrCodeDataUrl String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }

@@ -115,6 +115,12 @@ A plataforma permite que proprietários:
 * Contrapropostas;
 * Aceite ou recusa de propostas.
 
+### Checkout acadêmico (Pix demonstrativo)
+
+O carrinho permite criar um pedido autenticado e exibir um QR Code demonstrativo. O backend calcula o total usando os preços persistidos, reserva as peças únicas e registra o pagamento como pendente. A tela oferece ações para simular aprovação ou recusa; uma recusa libera as peças novamente.
+
+Este fluxo é exclusivamente acadêmico: o conteúdo do QR Code é uma referência interna da aplicação, não é uma cobrança Pix válida e não movimenta dinheiro. Para executar em um banco existente, aplique as migrações do Prisma (`cd backend && npx prisma migrate deploy`) e gere o cliente (`npx prisma generate`).
+
 ### Painel do Brechó
 
 * Gerenciamento de peças;

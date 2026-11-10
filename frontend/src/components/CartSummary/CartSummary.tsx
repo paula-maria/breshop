@@ -6,9 +6,10 @@ type CartSummaryProps = {
   subtotal: number
   hasUnavailable: boolean
   onCheckout: () => void
+  loading?: boolean
 }
 
-export default function CartSummary({ subtotal, hasUnavailable, onCheckout }: CartSummaryProps) {
+export default function CartSummary({ subtotal, hasUnavailable, onCheckout, loading = false }: CartSummaryProps) {
   return (
     <aside className="cart-summary">
       <h2 className="cart-summary__title">Resumo do pedido</h2>
@@ -38,9 +39,9 @@ export default function CartSummary({ subtotal, hasUnavailable, onCheckout }: Ca
         type="button"
         className="btn btn-cyan-pill cart-summary__checkout"
         onClick={onCheckout}
-        disabled={hasUnavailable || subtotal === 0}
+        disabled={hasUnavailable || subtotal === 0 || loading}
       >
-        Finalizar pedido
+        {loading ? 'Preparando pedido...' : 'Finalizar pedido'}
       </button>
 
       <Link to="/brechos?view=pecas" className="cart-summary__continue">Continuar comprando</Link>
